@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تبدیل کسر و عدد مخلوط (۲۰ سوال) - آقای صرامی</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font/dist/font-face.css');
+
+        :root {
+            --bg-color: #f4f7f6;
+            --primary: #3498db;
+            --success: #27ae60;
+            --error: #c0392b;
+            --warning: #e67e22; /* رنگ نارنجی برای سوالات سخت */
+            --card-bg: #ffffff;
+            --text: #2c3e50;
+        }
+
+        body {
+            font-family: 'Vazir', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header { margin-bottom: 30px; }
+        
+        .score-panel {
+            background: #34495e;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 25px 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-bottom: 4px solid #bdc3c7;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .card.solved { border-bottom-color: var(--success); background: #f0fff4; }
+
+        /* استایل سوال سخت */
+        .card.hard-q {
+            border-bottom-color: var(--warning);
+        }
+        .badge-hard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: var(--warning);
+            color: white;
+            font-size: 0.75em;
+            padding: 3px 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* جهت ریاضی چپ به راست */
+        .math-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8em; 
+            margin: 15px 0;
+            gap: 15px;
+            direction: ltr; 
+        }
+
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 5px;
+        }
+        
+        .mixed-number {
+            display: flex;
+            align-items: center;
+        }
+        
+        .whole-part {
+            font-size: 1.2em;
+            margin-right: 8px; 
+            font-weight: bold;
+            line-height: 1;
+        }
+        
+        .frac-num { border-bottom: 2px solid #2c3e50; padding-bottom: 2px; width: 100%; text-align: center; display: block;}
+        .frac-den { padding-top: 2px; width: 100%; text-align: center; display: block;}
+
+        /* استایل ورودی‌ها */
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .input-box {
+            width: 50px;
+            height: 40px;
+            font-family: 'Vazir', sans-serif;
+            font-size: 0.8em;
+            text-align: center;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            outline: none;
+            transition: border 0.3s;
+            direction: ltr; 
+        }
+        .input-box:focus { border-color: var(--primary); }
+        
+        .input-fraction {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .input-fraction .input-box { width: 45px; height: 35px; }
+        .input-fraction .line { width: 100%; height: 2px; background: #2c3e50; margin: 2px 0; }
+
+        .btn-check {
+            background: #f39c12;
+            color: white;
+            border: none;
+            padding: 8px 25px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 80%;
+            font-family: 'Vazir', sans-serif;
+        }
+        .btn-check:hover { background: #e67e22; }
+
+        .feedback {
+            margin-top: 10px;
+            font-size: 0.9em;
+            min-height: 30px;
+            line-height: 1.6;
+            direction: rtl; 
+        }
+        .feedback.correct { color: var(--success); }
+        .feedback.wrong { color: var(--error); }
+
+        .designer {
+            margin-top: 50px;
+            padding: 20px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            font-size: 1.1em;
+            border-radius: 10px 10px 0 0;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .label-type {
+            background: #e8f4f8;
+            color: #2980b9;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            margin-bottom: 10px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🔄 تمرین تبدیل کسر (۲۰ سوال)</h1>
+        <p>جاهای خالی را با عدد مناسب پر کن</p>
+        <div class="score-panel">
+            امتیاز: <span id="score">۰</span> از ۲۰۰
+        </div>
+    </div>
+
+    <div class="container" id="question-container">
+        <!-- سوالات اینجا ساخته می‌شوند -->
+    </div>
+
+    <div class="designer">
+        طراح : آقای صرامی
+    </div>
+
+    <script>
+        // m2i: Mixed to Improper (مخلوط به کسر)
+        // i2m: Improper to Mixed (کسر به مخلوط)
+        
+        const questions = [
+            // --- ۱۰ سوال تبدیل مخلوط به کسر ---
+            { type: 'm2i', w: 2, n: 1, d: 3 }, // ۲ و ۱/۳
+            { type: 'm2i', w: 1, n: 3, d: 4 }, // ۱ و ۳/۴
+            { type: 'm2i', w: 3, n: 1, d: 2 }, // ۳ و ۱/۲
+            { type: 'm2i', w: 4, n: 2, d: 5 }, // ۴ و ۲/۵
+            { type: 'm2i', w: 2, n: 3, d: 5 }, // ۲ و ۳/۵
+            { type: 'm2i', w: 5, n: 1, d: 6 }, // ۵ و ۱/۶
+            { type: 'm2i', w: 1, n: 2, d: 7 }, // ۱ و ۲/۷
+            { type: 'm2i', w: 3, n: 3, d: 4 }, // ۳ و ۳/۴
+            { type: 'm2i', w: 6, n: 1, d: 2 }, // ۶ و ۱/۲
+            
+            // --- ۱۰ سوال تبدیل کسر به مخلوط ---
+            { type: 'i2m', n: 5, d: 2 },  // ۵/۲
+            { type: 'i2m', n: 7, d: 3 },  // ۷/۳
+            { type: 'i2m', n: 9, d: 4 },  // ۹/۴
+            { type: 'i2m', n: 13, d: 5 }, // ۱۳/۵
+            { type: 'i2m', n: 11, d: 3 }, // ۱۱/۳
+            { type: 'i2m', n: 17, d: 4 }, // ۱۷/۴
+            { type: 'i2m', n: 15, d: 2 }, // ۱۵/۲
+            { type: 'i2m', n: 20, d: 3 }, // ۲۰/۳ 
+            
+            // --- ۳ سوال سخت (آخرین‌ها) ---
+            // سخت ۱: مخلوط به کسر (اعداد بزرگتر) ۱۲ و ۳/۴
+            { type: 'm2i', w: 12, n: 3, d: 4, hard: true }, 
+            // سخت ۲: مخلوط به کسر (جدول ضرب ۹) ۹ و ۷/۸
+            { type: 'm2i', w: 9, n: 7, d: 8, hard: true },
+            // سخت ۳: کسر به مخلوط (تقسیم سخت‌تر) ۸۹ تقسیم بر ۹ (جواب: ۹ و ۸/۹)
+            { type: 'i2m', n: 89, d: 9, hard: true },
+        ];
+
+        let totalScore = 0;
+
+        function toPersianNum(num) {
+            const id = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+            return num.toString().replace(/[0-9]/g, w => id[+w]);
+        }
+
+        function createFractionHTML(n, d, w = null) {
+            let html = '';
+            if (w !== null) {
+                html += `<span class="whole-part">${toPersianNum(w)}</span>`;
+            }
+            html += `<div class="fraction"><span class="frac-num">${toPersianNum(n)}</span><span class="frac-den">${toPersianNum(d)}</span></div>`;
+            return html;
+        }
+
+        function renderQuestions() {
+            const container = document.getElementById('question-container');
+            
+            questions.forEach((q, idx) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                if(q.hard) card.classList.add('hard-q');
+                card.id = `card-${idx}`;
+                
+                let badge = q.hard ? '<span class="badge-hard">🔥 سوال سخت</span>' : '';
+                let content = '';
+                
+                if (q.type === 'm2i') {
+                    // مخلوط به کسر
+                    content = `
+                        ${badge}
+                        <div class="label-type">تبدیل به کسر بزرگتر از واحد</div>
+                        <div class="math-row">
+                            <div class="mixed-number">${createFractionHTML(q.n, q.d, q.w)}</div>
+                            <span>=</span>
+                            <div class="input-fraction">
+                                <input type="number" class="input-box" id="inp-n-${idx}" placeholder="؟">
+                                <div class="line"></div>
+                                <input type="number" class="input-box" id="inp-d-${idx}" placeholder="؟">
+                            </div>
+                        </div>
+                        <button class="btn-check" onclick="checkAnswer(${idx})">بررسی پاسخ</button>
+                    `;
+                } else {
+                    // کسر به مخلوط
+                    content = `
+                        ${badge}
+                        <div class="label-type">تبدیل به عدد مخلوط</div>
+                        <div class="math-row">
+                            ${createFractionHTML(q.n, q.d)}
+                            <span>=</span>
+                            <div class="input-group">
+                                <input type="number" class="input-box" id="inp-w-${idx}" placeholder="؟" style="width:40px">
+                                <div class="input-fraction">
+                                    <input type="number" class="input-box" id="inp-n-${idx}" placeholder="؟">
+                                    <div class="line"></div>
+                                    <input type="number" class="input-box" id="inp-d-${idx}" placeholder="؟">
+                                </div>
+                            </div>
+                        </div>
+                        <button class="btn-check" onclick="checkAnswer(${idx})">بررسی پاسخ</button>
+                    `;
+                }
+
+                card.innerHTML = content + `<div id="fb-${idx}" class="feedback"></div>`;
+                container.appendChild(card);
+            });
+        }
+
+        function checkAnswer(idx) {
+            const q = questions[idx];
+            const card = document.getElementById(`card-${idx}`);
+            const feedback = document.getElementById(`fb-${idx}`);
+            
+            if(card.classList.contains('solved')) return;
+
+            let isCorrect = false;
+            let msg = "";
+            
+            const inputN = parseInt(document.getElementById(`inp-n-${idx}`).value);
+            const inputD = parseInt(document.getElementById(`inp-d-${idx}`).value);
+            
+            if (q.type === 'm2i') {
+                // منطق مخلوط به کسر
+                const correctN = (q.w * q.d) + q.n;
+                const correctD = q.d;
+
+                if (isNaN(inputN) || isNaN(inputD)) {
+                    feedback.innerText = "لطفا همه خانه‌ها را پر کن.";
+                    feedback.className = "feedback wrong";
+                    return;
+                }
+
+                if (inputN === correctN && inputD === correctD) {
+                    isCorrect = true;
+                    msg = `✅ آفرین! درست محاسبه کردی.`;
+                } else {
+                    msg = `❌ اشتباه. راه حل: <br> مخرج (${toPersianNum(q.d)}) تغییر نمی‌کند. <br> صورت = (${toPersianNum(q.w)} × ${toPersianNum(q.d)}) + ${toPersianNum(q.n)} = ${toPersianNum(correctN)}`;
+                }
+
+            } else {
+                // منطق کسر به مخلوط
+                const inputW = parseInt(document.getElementById(`inp-w-${idx}`).value);
+                
+                const correctW = Math.floor(q.n / q.d);
+                const correctN = q.n % q.d;
+                const correctD = q.d;
+
+                if (isNaN(inputN) || isNaN(inputD) || isNaN(inputW)) {
+                    feedback.innerText = "لطفا همه خانه‌ها را پر کن.";
+                    feedback.className = "feedback wrong";
+                    return;
+                }
+
+                if (inputW === correctW && inputN === correctN && inputD === correctD) {
+                    isCorrect = true;
+                    msg = `✅ عالی! کسر ${toPersianNum(q.n)}/${toPersianNum(q.d)} یعنی ${toPersianNum(correctW)} واحد کامل و ${toPersianNum(correctN)}/${toPersianNum(correctD)}.`;
+                } else {
+                     msg = `❌ اشتباه. راه حل: <br> ${toPersianNum(q.n)} تقسیم بر ${toPersianNum(q.d)} می‌شود ${toPersianNum(correctW)} (عدد صحیح) <br> و باقیمانده می‌شود ${toPersianNum(correctN)} (صورت کسر).`;
+                }
+            }
+
+            if (isCorrect) {
+                feedback.innerHTML = msg;
+                feedback.className = "feedback correct";
+                card.classList.add('solved');
+                card.querySelectorAll('input').forEach(i => { i.disabled = true; i.style.backgroundColor = '#f0fff4'; i.style.border = 'none'; });
+                
+                totalScore += 10;
+                document.getElementById('score').innerText = toPersianNum(totalScore);
+            } else {
+                feedback.innerHTML = msg;
+                feedback.className = "feedback wrong";
+            }
+        }
+
+        renderQuestions();
+
+    </script>
+</body>
+</html>
