@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کاربرگ جامع ریاضی - ۴۶ سوال (کسر و واحد)</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font/dist/font-face.css');
+
+        :root {
+            --bg-color: #f0f4f8;
+            --primary: #3498db;
+            --success: #27ae60;
+            --error: #c0392b;
+            --card-bg: #ffffff;
+            --option-bg: #f8f9fa;
+        }
+
+        body {
+            font-family: 'Vazir', sans-serif;
+            background-color: var(--bg-color);
+            color: #2c3e50;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .header { margin-bottom: 30px; }
+        
+        .score-panel {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            font-size: 1.1em;
+            margin-top: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: #dfe6e9;
+            border-radius: 5px;
+            margin: 20px auto;
+            width: 80%;
+            max-width: 600px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--success);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            padding-bottom: 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+            border-bottom: 4px solid #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .card.solved { border-bottom-color: var(--success); background: #f0fff4; }
+
+        /* استایل بخش کسر */
+        .fraction-box {
+            background: #fff3cd;
+            color: #856404;
+            border: 2px solid #ffeeba;
+            border-radius: 12px;
+            padding: 5px 15px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: bold;
+            width: 90%;
+        }
+        
+        .math-fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            font-size: 1.3em;
+            line-height: 1;
+            margin: 0 5px;
+        }
+        .math-num { border-bottom: 2px solid currentColor; width: 100%; text-align: center; padding-bottom: 2px; display: block;}
+        .math-den { width: 100%; text-align: center; padding-top: 2px; display: block;}
+
+        /* استایل شکل‌ها */
+        .shape-container {
+            margin: 15px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .grid-wrapper {
+            display: grid;
+            border: 3px solid #34495e;
+            background: #fff;
+            overflow: hidden; 
+            box-shadow: 3px 3px 0 rgba(44,62,80,0.2);
+        }
+
+        .cell {
+            background: #ecf0f1;
+            border: 1px solid #bdc3c7;
+            cursor: pointer;
+            width: 35px;
+            height: 35px;
+            transition: all 0.2s;
+        }
+        .cell:hover { background: #dfe6e9; }
+        .cell.selected { background: var(--primary); border-color: #2980b9; }
+        .cell.pre-filled { background: var(--primary); border-color: #2980b9; cursor: default; }
+
+        /* شکل‌های خاص */
+        .shape-circle { border-radius: 50%; }
+        .shape-diamond { transform: rotate(45deg); margin: 20px; }
+        .shape-triangle-wrap { clip-path: polygon(50% 0%, 0% 100%, 100% 100%); padding-bottom: 5px; }
+        .shape-skew { transform: skewX(-20deg); margin: 0 15px; }
+        
+        .hex-grid { display: flex; flex-wrap: wrap; width: 160px; justify-content: center; gap: 2px; }
+        .hex-cell {
+            width: 35px; height: 38px;
+            background: #ecf0f1;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+            margin-bottom: -8px;
+            cursor: pointer;
+        }
+        .hex-cell.selected, .hex-cell.pre-filled { background: var(--primary); }
+
+        .collection-wrap { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+        .collection-item {
+            width: 30px; height: 30px;
+            background: #ecf0f1;
+            border: 2px solid #95a5a6;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .collection-item.selected, .collection-item.pre-filled { background: var(--primary); border-color: #2980b9; }
+        
+        .star-shape {
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            background-color: #f1c40f; border: none;
+        }
+        .star-shape.selected, .star-shape.pre-filled { background-color: #e67e22; }
+
+        /* استایل دکمه و بازخورد */
+        .btn-check {
+            background: #f39c12; color: white; border: none;
+            padding: 8px 25px; border-radius: 8px; font-size: 1em;
+            cursor: pointer; width: 100%; font-family: 'Vazir', sans-serif; margin-top: 15px;
+        }
+        .btn-check:hover { background: #e67e22; }
+        
+        .feedback {
+            margin-top: 10px; font-size: 0.9em; min-height: 25px;
+            width: 100%; line-height: 1.6;
+        }
+        .feedback.correct { color: var(--success); }
+        .feedback.wrong { color: var(--error); }
+
+        /* استایل‌های جدید برای سوالات "پیدا کردن واحد" */
+        .options-container {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .option-card {
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 5px;
+            cursor: pointer;
+            background: var(--option-bg);
+            transition: all 0.2s;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 60px;
+        }
+        .option-card:hover { border-color: var(--primary); background: #eaf2f8; }
+        .option-card.active { border-color: var(--primary); background: #d4e6f1; box-shadow: 0 0 5px var(--primary); }
+        
+        /* کوچک کردن سلول‌ها داخل گزینه‌ها */
+        .option-card .cell { width: 15px; height: 15px; border-width: 1px; cursor: default; }
+        .option-card .collection-item { width: 15px; height: 15px; cursor: default; }
+        .option-card .hex-cell { width: 15px; height: 18px; cursor: default; margin-bottom: -4px;}
+        .option-card .grid-wrapper { border-width: 1px; box-shadow: none; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>📝 کاربرگ جامع ریاضی (کسر و واحد)</h1>
+        <p>آقای معلم: محمد | تعداد کل سوالات: ۴۶</p>
+        <div class="score-panel">
+            امتیاز: <span id="total-score">۰</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+    </div>
+
+    <div class="grid-container" id="questions-container"></div>
+
+    <script>
+        // لیست سوالات: ۳۶ تای اول (رنگ‌آمیزی) + ۱۰ تای جدید (پیدا کردن واحد)
+        const questions = [
+            // --- ۳۶ سوال قبلی (رنگ آمیزی) ---
+            { q: 1, t: 2, type: 'grid', r: 1, c: 2, total: 2 },
+            { q: 1, t: 2, type: 'circle', r: 1, c: 2, total: 2 }, 
+            { q: 1, t: 2, type: 'grid', r: 2, c: 3, total: 6 }, 
+            { q: 1, t: 2, type: 'diamond', r: 2, c: 2, total: 4 },
+            { q: 1, t: 2, type: 'triangle', r: 2, c: 2, total: 4 },
+            { q: 1, t: 2, type: 'hex-tower', r: 10, c: 1, total: 10 },
+
+            { q: 1, t: 3, type: 'grid', r: 1, c: 3, total: 3 },
+            { q: 1, t: 3, type: 'collection', count: 3, shape: 'hex', total: 3 },
+            { q: 1, t: 3, type: 'grid', r: 3, c: 3, total: 9 },
+            { q: 1, t: 3, type: 'skew', r: 2, c: 3, total: 6 },
+            { q: 1, t: 3, type: 'collection', count: 6, shape: 'star', total: 6 },
+            { q: 1, t: 3, type: 'grid', r: 1, c: 6, total: 6 },
+
+            { q: 2, t: 3, type: 'grid', r: 3, c: 1, total: 3 },
+            { q: 2, t: 3, type: 'skew', r: 2, c: 3, total: 6 },
+            { q: 2, t: 3, type: 'grid', r: 3, c: 4, total: 12 },
+            { q: 2, t: 3, type: 'collection', count: 9, shape: 'circle', total: 9 },
+
+            { q: 1, t: 4, type: 'grid', r: 2, c: 2, total: 4 },
+            { q: 1, t: 4, type: 'circle', r: 2, c: 2, total: 4 },
+            { q: 1, t: 4, type: 'diamond', r: 2, c: 2, total: 4 },
+            { q: 1, t: 4, type: 'grid', r: 2, c: 4, total: 8 },
+            { q: 1, t: 4, type: 'hex-grid', total: 8 },
+            { q: 1, t: 4, type: 'grid', r: 4, c: 4, total: 16 },
+
+            { q: 3, t: 4, type: 'grid', r: 2, c: 2, total: 4 },
+            { q: 3, t: 4, type: 'hex-grid', total: 8 },
+            { q: 3, t: 4, type: 'grid', r: 1, c: 4, total: 4 },
+            { q: 3, t: 4, type: 'collection', count: 12, shape: 'rect', total: 12 },
+
+            { q: 1, t: 5, type: 'grid', r: 1, c: 5, total: 5 },
+            { q: 1, t: 5, type: 'grid', r: 2, c: 5, total: 10 },
+            { q: 1, t: 5, type: 'hex-tower', r: 10, c: 1, total: 10 },
+            { q: 1, t: 5, type: 'collection', count: 5, shape: 'circle', total: 5 },
+            { q: 1, t: 5, type: 'grid', r: 5, c: 5, total: 25 },
+
+            { q: 1, t: 2, type: 'grid', r: 4, c: 5, total: 20 },
+            { q: 3, t: 5, type: 'grid', r: 1, c: 5, total: 5 },
+            { q: 4, t: 5, type: 'grid', r: 2, c: 5, total: 10 },
+            { q: 5, t: 6, type: 'hex-grid', total: 6 },
+
+            // --- ۱۰ سوال جدید: پیدا کردن واحد (شکل کامل) ---
+            // isUnitQuestion: true مشخص می کند این سوال نوع جدید است
+            // baseCount: تعداد سلول هایی که به عنوان "قسمت" نشان داده می شود
+            // options: آرایه ای که تعداد سلول های هر گزینه را نشان می دهد
+            // correctIndex: اندیس گزینه صحیح (0، 1 یا 2)
+            
+            // 37: شکل ۲ تایی برابر ۱/۳ است. واحد؟ (۶)
+            { isUnitQuestion: true, n: 1, d: 3, baseCount: 2, shape: 'grid', options: [4, 6, 8], correctIndex: 1 },
+            // 38: شکل ۱ دونه ای برابر ۱/۴ است. واحد؟ (۴)
+            { isUnitQuestion: true, n: 1, d: 4, baseCount: 1, shape: 'circle', options: [3, 4, 5], correctIndex: 1 },
+            // 39: شکل ۳ تایی برابر ۳/۴ است. واحد؟ (۴)
+            { isUnitQuestion: true, n: 3, d: 4, baseCount: 3, shape: 'hex-grid', options: [4, 6, 8], correctIndex: 0 },
+            // 40: شکل ۲ تایی برابر ۱/۲ است. واحد؟ (۴)
+            { isUnitQuestion: true, n: 1, d: 2, baseCount: 2, shape: 'grid', options: [2, 4, 6], correctIndex: 1 },
+            // 41: شکل ۴ تایی برابر ۲/۳ است. واحد؟ (۶)
+            { isUnitQuestion: true, n: 2, d: 3, baseCount: 4, shape: 'collection', subShape: 'star', options: [5, 6, 7], correctIndex: 1 },
+            // 42: شکل ۳ تایی برابر ۱/۲ است. واحد؟ (۶)
+            { isUnitQuestion: true, n: 1, d: 2, baseCount: 3, shape: 'collection', subShape: 'circle', options: [5, 6, 9], correctIndex: 1 },
+            // 43: شکل ۲ تایی برابر ۱/۵ است. واحد؟ (۱۰)
+            { isUnitQuestion: true, n: 1, d: 5, baseCount: 2, shape: 'grid', options: [8, 10, 12], correctIndex: 1 },
+            // 44: شکل ۶ تایی برابر ۳/۵ است. واحد؟ (۱۰)
+            { isUnitQuestion: true, n: 3, d: 5, baseCount: 6, shape: 'grid', options: [8, 10, 15], correctIndex: 1 },
+            // 45: شکل ۱ دونه ای برابر ۱/۲ است. واحد؟ (۲)
+            { isUnitQuestion: true, n: 1, d: 2, baseCount: 1, shape: 'triangle', options: [2, 3, 4], correctIndex: 0 },
+            // 46: شکل ۲ تایی برابر ۲/۵ است. واحد؟ (۵) - نکته انحرافی، ۲ تا خود کسر است. واحد ۵ تاست.
+            { isUnitQuestion: true, n: 2, d: 5, baseCount: 2, shape: 'hex-grid', options: [4, 5, 6], correctIndex: 1 },
+        ];
+
+        let totalScore = 0;
+        let solvedCount = 0;
+
+        function toPersianNum(num) {
+            const id = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+            return num.toString().replace(/[0-9]/g, w => id[+w]);
+        }
+
+        function createFractionHTML(n, d) {
+            return `<div class="math-fraction"><span class="math-num">${n}</span><span class="math-den">${d}</span></div>`;
+        }
+
+        // تولید HTML برای شکل‌ها (هم برای سوال اصلی هم برای گزینه‌ها)
+        function generateShapeHTML(type, count, isMini = false, subShape = '') {
+            let html = '';
+            let itemClass = isMini ? '' : 'cell-item'; // فقط شکل اصلی قابلیت کلیک برای رنگ آمیزی دارد (در نوع اول)
+            let preFilledClass = isMini ? 'pre-filled' : ''; 
+
+            if (type === 'collection') {
+                html = `<div class="collection-wrap">`;
+                let shapeClass = subShape === 'star' ? 'star-shape' : (subShape === 'circle' ? 'shape-circle' : '');
+                for(let i=0; i<count; i++) {
+                    html += `<div class="collection-item ${shapeClass} ${itemClass} ${preFilledClass}"></div>`;
+                }
+                html += `</div>`;
+            } 
+            else if (type === 'hex-grid') {
+                html = `<div class="hex-grid" style="${isMini ? 'width:auto' : ''}">`;
+                for(let i=0; i<count; i++) {
+                    html += `<div class="hex-cell ${itemClass} ${preFilledClass}"></div>`;
+                }
+                html += `</div>`;
+            }
+            else {
+                // Grid پیش فرض
+                let wrapperClass = 'grid-wrapper';
+                if (type === 'circle') wrapperClass += ' shape-circle';
+                if (type === 'diamond') wrapperClass += ' shape-diamond';
+                if (type === 'skew') wrapperClass += ' shape-skew';
+                if (type === 'triangle') wrapperClass += ' shape-triangle-wrap';
+
+                // محاسبه سطر و ستون برای نمایش زیباتر در گزینه‌ها
+                let c = isMini ? count : (type === 'grid' ? Math.ceil(Math.sqrt(count)) : count); 
+                let r = isMini ? 1 : (type === 'grid' ? Math.ceil(count / c) : 1);
+                
+                if(type === 'grid' && !isMini) {
+                    // اگر گرید معمولی بود و مینی نبود، سعی کن مربعی بسازی
+                     const sqrt = Math.sqrt(count);
+                     if(Number.isInteger(sqrt)) { r=sqrt; c=sqrt; }
+                     else if (count % 5 === 0) { c=5; r=count/5; }
+                     else if (count % 4 === 0) { c=4; r=count/4; }
+                     else if (count % 3 === 0) { c=3; r=count/3; }
+                     else if (count % 2 === 0) { c=2; r=count/2; }
+                     else { c=count; r=1; }
+                }
+                
+                // برای سوالات واحد، همیشه خطی نشان بده اگر مینی هستند تا جای کمتری بگیرد
+                if(isMini && type === 'grid') { c = count; r = 1; }
+
+                let cellSize = isMini ? '15px' : '35px';
+                let gridStyle = `grid-template-columns: repeat(${c}, ${cellSize}); grid-template-rows: repeat(${r}, ${cellSize});`;
+                if(isMini) gridStyle += " gap: 1px; border: 1px solid #333;";
+
+                html = `<div class="${wrapperClass}" style="${gridStyle}">`;
+                for(let i=0; i<count; i++) {
+                    html += `<div class="cell ${itemClass} ${preFilledClass}" style="width:${cellSize}; height:${cellSize}"></div>`;
+                }
+                html += `</div>`;
+            }
+            return html;
+        }
+
+        // رندر کردن شکل برای سوالات نوع اول (رنگ آمیزی)
+        function renderColoringShape(q, index) {
+             // تبدیل فرمت آبجکت سوال قدیمی به ورودی تابع generateShapeHTML
+             let shapeType = q.type;
+             let count = q.total;
+             
+             // برای نوع hex-tower و grid تنظیمات خاصی در CSS بود، اینجا ساده سازی میکنیم
+             if(shapeType === 'hex-tower') {
+                 return `<div class="shape-container"><div class="grid-wrapper" style="display:grid; grid-template-columns: 60px; grid-template-rows: repeat(${q.total}, 25px);">
+                    ${Array(q.total).fill(0).map(()=>`<div class="cell cell-item" style="width:60px; height:25px"></div>`).join('')}
+                 </div></div>`;
+             }
+             
+             let r = q.r; let c = q.c;
+             if(shapeType === 'grid' || shapeType === 'skew' || shapeType === 'diamond' || shapeType === 'circle' || shapeType === 'triangle') {
+                 let wrapperClass = 'grid-wrapper';
+                 if (shapeType === 'circle') wrapperClass += ' shape-circle';
+                 if (shapeType === 'diamond') wrapperClass += ' shape-diamond';
+                 if (shapeType === 'skew') wrapperClass += ' shape-skew';
+                 if (shapeType === 'triangle') wrapperClass += ' shape-triangle-wrap';
+                 
+                 let html = `<div class="shape-container"><div class="${wrapperClass}" id="grid-${index}" style="grid-template-columns: repeat(${c}, 35px); grid-template-rows: repeat(${r}, 35px);">`;
+                 for(let i=0; i<q.total; i++) { html += `<div class="cell cell-item"></div>`; }
+                 html += `</div></div>`;
+                 return html;
+             } 
+             else {
+                 return `<div class="shape-container" id="grid-${index}">` + generateShapeHTML(q.type, q.total, false, q.shape) + `</div>`;
+             }
+        }
+
+        function init() {
+            const container = document.getElementById('questions-container');
+            
+            questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.id = `card-${index}`;
+                
+                if (q.isUnitQuestion) {
+                    // --- رندر سوالات نوع دوم: پیدا کردن واحد ---
+                    const pN = toPersianNum(q.n);
+                    const pD = toPersianNum(q.d);
+                    
+                    // ساخت گزینه‌ها
+                    let optionsHTML = '';
+                    q.options.forEach((optCount, optIndex) => {
+                        optionsHTML += `
+                            <div class="option-card" onclick="selectOption(${index}, ${optIndex})">
+                                <span style="position:absolute; top:2px; right:5px; font-size:0.8em; color:#7f8c8d">${toPersianNum(optIndex+1)}</span>
+                                ${generateShapeHTML(q.shape, optCount, true, q.subShape)}
+                            </div>
+                        `;
+                    });
+
+                    card.innerHTML = `
+                        <div class="fraction-box">
+                            اگر شکل زیر ${createFractionHTML(pN, pD)} باشد، واحد کامل کدام است؟
+                        </div>
+                        <div class="shape-container">
+                            ${generateShapeHTML(q.shape, q.baseCount, true, q.subShape)} <!-- شکل داده شده پر شده است -->
+                        </div>
+                        <div style="width:100%; text-align:right; font-size:0.9em; margin-top:10px;">گزینه درست را انتخاب کنید:</div>
+                        <div class="options-container" id="opts-${index}">
+                            ${optionsHTML}
+                        </div>
+                        <button class="btn-check" onclick="checkUnitAnswer(${index})">بررسی</button>
+                        <div id="fb-${index}" class="feedback"></div>
+                    `;
+
+                } else {
+                    // --- رندر سوالات نوع اول: رنگ آمیزی (کد قبلی) ---
+                    const pN = toPersianNum(q.q);
+                    const pD = toPersianNum(q.t);
+                    card.innerHTML = `
+                        <div class="fraction-box">
+                            ${createFractionHTML(pN, pD)} <span>را رنگ کن</span>
+                        </div>
+                        ${renderColoringShape(q, index)}
+                        <button class="btn-check" onclick="checkColoringAnswer(${index}, ${q.total}, ${q.q}, ${q.t})">بررسی</button>
+                        <div id="fb-${index}" class="feedback"></div>
+                    `;
+                }
+                
+                container.appendChild(card);
+            });
+
+            // رویداد کلیک برای سوالات رنگ آمیزی
+            document.querySelectorAll('.cell-item').forEach(cell => {
+                cell.addEventListener('click', function() {
+                    // پیدا کردن کارت والد برای چک کردن قفل بودن
+                    let parent = this.parentElement;
+                    while(!parent.classList.contains('card')) {
+                        parent = parent.parentElement;
+                        if(parent.tagName === 'BODY') return;
+                    }
+                    if(parent.classList.contains('solved')) return;
+                    
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+
+        // --- منطق بررسی سوالات رنگ آمیزی (نوع اول) ---
+        function checkColoringAnswer(index, totalParts, targetNum, targetDen) {
+            const card = document.getElementById(`card-${index}`);
+            if(card.classList.contains('solved')) return;
+
+            const grid = card.querySelector('.grid-wrapper') || card.querySelector('.collection-wrap') || card.querySelector('.hex-grid');
+            const feedback = document.getElementById(`fb-${index}`);
+            
+            const selected = card.querySelectorAll('.cell-item.selected').length;
+            
+            if(selected === 0) {
+                feedback.innerText = "هنوز چیزی رنگ نکردی!";
+                feedback.className = "feedback wrong";
+                return;
+            }
+
+            const userRatio = selected / totalParts;
+            const targetRatio = targetNum / targetDen;
+            const isCorrect = Math.abs(userRatio - targetRatio) < 0.001;
+
+            const userFractionHTML = createFractionHTML(toPersianNum(selected), toPersianNum(totalParts));
+            const targetFractionHTML = createFractionHTML(toPersianNum(targetNum), toPersianNum(targetDen));
+
+            if (isCorrect) {
+                let msg = `✅ عالی! ${userFractionHTML} صحیح است.`;
+                if (selected !== targetNum || totalParts !== targetDen) {
+                     msg += ` <br><small style="color:#555">چون: ${userFractionHTML} = ${targetFractionHTML}</small>`;
+                }
+                feedback.innerHTML = msg;
+                feedback.className = "feedback correct";
+                finalizeQuestion(card);
+            } else {
+                feedback.innerHTML = `❌ اشتباهه. تو ${userFractionHTML} را رنگ کردی.`;
+                feedback.className = "feedback wrong";
+            }
+        }
+
+        // --- انتخاب گزینه برای سوالات پیدا کردن واحد ---
+        let selectedOptions = {}; // ذخیره گزینه انتخاب شده برای هر سوال
+
+        function selectOption(qIndex, optIndex) {
+            const card = document.getElementById(`card-${qIndex}`);
+            if(card.classList.contains('solved')) return;
+
+            selectedOptions[qIndex] = optIndex;
+            
+            // بروزرسانی ظاهر
+            const opts = card.querySelectorAll('.option-card');
+            opts.forEach((opt, idx) => {
+                if(idx === optIndex) opt.classList.add('active');
+                else opt.classList.remove('active');
+            });
+        }
+
+        // --- منطق بررسی سوالات پیدا کردن واحد (نوع دوم) ---
+        function checkUnitAnswer(index) {
+            const card = document.getElementById(`card-${index}`);
+            if(card.classList.contains('solved')) return;
+
+            const feedback = document.getElementById(`fb-${index}`);
+            const q = questions[index];
+            
+            if (selectedOptions[index] === undefined) {
+                feedback.innerText = "لطفا یک گزینه را انتخاب کن.";
+                feedback.className = "feedback wrong";
+                return;
+            }
+
+            const isCorrect = selectedOptions[index] === q.correctIndex;
+            const correctCount = q.options[q.correctIndex];
+            const pBase = toPersianNum(q.baseCount);
+            const pCorrect = toPersianNum(correctCount);
+            const pN = toPersianNum(q.n);
+            const pD = toPersianNum(q.d);
+
+            if (isCorrect) {
+                feedback.innerHTML = `✅ آفرین! درست حدس زدی. واحد کامل ${pCorrect} تایی است.`;
+                feedback.className = "feedback correct";
+                finalizeQuestion(card);
+            } else {
+                // توضیح آموزشی برای غلط
+                let msg = `❌ اشتباه. `;
+                // محاسبه منطق توضیحی
+                // اگر n تا قطعه برابر کسر n/d باشد، پس هر ۱ قسمت کسر برابر (تعداد/صورت) است.
+                // کل شکل (واحد) برابر (تعداد یک قسمت * مخرج) است.
+                let onePartSize = q.baseCount / q.n;
+                let totalSize = onePartSize * q.d;
+                
+                msg += `اگر ${pBase} تا برابر ${createFractionHTML(pN, pD)} باشد، شکل کامل باید ${toPersianNum(totalSize)} تایی باشد.`;
+                
+                feedback.innerHTML = msg;
+                feedback.className = "feedback wrong";
+            }
+        }
+
+        function finalizeQuestion(card) {
+            card.classList.add('solved');
+            totalScore += 10;
+            solvedCount++;
+            document.getElementById('total-score').innerText = toPersianNum(totalScore);
+            const progressPercent = (solvedCount / questions.length) * 100;
+            document.getElementById('progress').style.width = `${progressPercent}%`;
+        }
+
+        init();
+    </script>
+</body>
+</html>
