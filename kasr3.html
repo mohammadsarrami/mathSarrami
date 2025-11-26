@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آزمونک تفریق کسر (۵ سوالی) - آقای صرامی</title>
+    <style>
+        /* =========================================
+           محل قرارگیری فونت اختصاصی شما
+           ========================================= */
+        @font-face {
+            font-family: 'CustomMathFont';
+            /* اگر کد Base64 دارید، آن را داخل url(...) قرار دهید. 
+               در غیر این صورت از فونت پیش‌فرض استفاده می‌شود */
+            src: local('Arial'); 
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font/dist/font-face.css');
+
+        :root {
+            --bg-color: #fdfdfd;
+            --primary: #2c3e50;
+            --accent: #8e44ad; /* رنگ بنفش برای تنوع */
+            --success: #27ae60;
+            --error: #c0392b;
+            --font-main: 'CustomMathFont', 'Vazir', sans-serif;
+        }
+
+        body {
+            font-family: 'Vazir', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 { margin-bottom: 10px; }
+        
+        .info-box {
+            background: #eee;
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            font-family: var(--font-main);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-bottom: 60px;
+        }
+
+        .card {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 5px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+        
+        .card.correct-mode { border-color: var(--success); background: #f0fff4; }
+        .card.wrong-mode { border-color: var(--error); background: #fff5f5; }
+
+        /* استایل‌های ریاضی */
+        .math-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            direction: ltr; /* ریاضی چپ به راست */
+            font-size: 1.8rem;
+            font-family: var(--font-main);
+            margin-bottom: 15px;
+        }
+
+        .fraction-group {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 5px;
+        }
+
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: 0.7em;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        .fraction .top { border-bottom: 2px solid currentColor; padding: 0 2px; display: block; width: 100%; text-align: center; }
+        .fraction .bottom { padding: 0 2px; display: block; width: 100%; text-align: center; }
+        
+        .whole { font-size: 1.1em; }
+        .operator { margin: 0 10px; color: var(--accent); }
+
+        /* اینپوت‌ها */
+        .inputs-area {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            direction: ltr;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        input {
+            font-family: var(--font-main);
+            text-align: center;
+            font-size: 1.2rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+        }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 5px rgba(142, 68, 173, 0.3); }
+
+        .inp-w { width: 40px; height: 40px; }
+        .inp-frac-col { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .inp-n, .inp-d { width: 35px; height: 30px; font-size: 1rem; }
+        .frac-sep { width: 100%; height: 2px; background: #ccc; }
+
+        .btn-check {
+            margin-top: 15px;
+            padding: 8px 25px;
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: 'Vazir', sans-serif;
+        }
+        .btn-check:hover { background: #732d91; }
+
+        /* بخش بازخورد و شکل‌ها */
+        .feedback-container {
+            margin-top: 15px;
+            width: 100%;
+            display: none;
+            text-align: center;
+        }
+        .feedback-text {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        
+        .visuals-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            direction: ltr; /* چیدمان شکل‌ها از چپ به راست */
+            margin-top: 5px;
+        }
+
+        .designer {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            background: #333; color: #fff;
+            padding: 5px; font-size: 0.8rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <h1>آزمونک هوشمند تفریق کسر</h1>
+    <div class="info-box">
+        امتیاز شما: <span id="score-display">۰</span>
+    </div>
+
+    <div class="grid-container" id="quiz-container">
+        <!-- سوالات اینجا ساخته می‌شوند -->
+    </div>
+
+    <div class="designer">طراح: آقای صرامی | مخصوص پایه ششم</div>
+
+    <script>
+        // تبدیل اعداد انگلیسی به فارسی
+        function toPersian(num) {
+            if(num === null || num === undefined) return '';
+            return num.toString().replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]);
+        }
+
+        // تولید HTML کسر
+        function renderFraction(w, n, d) {
+            let html = '<div class="fraction-group">';
+            if (w !== null) html += `<span class="whole">${toPersian(w)}</span>`;
+            if (n !== null && d !== null) {
+                html += `
+                <div class="fraction">
+                    <span class="top">${toPersian(n)}</span>
+                    <span class="bottom">${toPersian(d)}</span>
+                </div>`;
+            }
+            html += '</div>';
+            return html;
+        }
+
+        // تولید SVG برای شکل
+        // denominator: مخرج (تعداد کل قسمت‌ها)
+        // filled: تعداد قسمت‌های رنگ شده (آبی)
+        // isCrossedOutFull: آیا کل شکل خط خورده است؟ (ضربدر بزرگ)
+        // crossPartsCount: تعداد قسمت‌های کوچکی که باید خط بخورند (از آخر)
+        function createShapeSVG(denominator, filled, isCrossedOutFull, crossPartsCount) {
+            const size = 50;
+            let rows, cols;
+            
+            // چیدمان شبکه‌ای ساده
+            if (denominator <= 3) { rows = 1; cols = denominator; }
+            else if (denominator === 4) { rows = 2; cols = 2; }
+            else if (denominator <= 6) { rows = 2; cols = Math.ceil(denominator/2); }
+            else { rows = 2; cols = Math.ceil(denominator/2); } 
+
+            const cellW = size / cols;
+            const cellH = size / rows;
+
+            let svg = `<svg width="${size}" height="${size}" style="border:1px solid #ccc; background:#fff; margin:2px;">`;
+            
+            let count = 0;
+            // رسم خانه‌ها
+            for(let r=0; r<rows; r++){
+                for(let c=0; c<cols; c++){
+                    count++;
+                    if(count > denominator) break;
+                    
+                    let x = c * cellW;
+                    let y = r * cellH;
+                    let color = (count <= filled) ? '#3498db' : '#fff';
+                    
+                    svg += `<rect x="${x}" y="${y}" width="${cellW}" height="${cellH}" fill="${color}" stroke="#333" stroke-width="1"/>`;
+                    
+                    // منطق خط زدن اجزای کوچک (از آخر به اول)
+                    if (!isCrossedOutFull && crossPartsCount > 0) {
+                        // شرط: ما می‌خواهیم 'crossPartsCount' تا خانه از *آخرین خانه‌های پر شده* را خط بزنیم.
+                        if (count > (filled - crossPartsCount) && count <= filled) {
+                             svg += `<line x1="${x}" y1="${y}" x2="${x+cellW}" y2="${y+cellH}" stroke="red" stroke-width="2"/>`;
+                             svg += `<line x1="${x+cellW}" y1="${y}" x2="${x}" y2="${y+cellH}" stroke="red" stroke-width="2"/>`;
+                        }
+                    }
+                }
+            }
+
+            // خط زدن کل شکل (ضربدر بزرگ)
+            if (isCrossedOutFull) {
+                svg += `<line x1="0" y1="0" x2="${size}" y2="${size}" stroke="red" stroke-width="4" opacity="0.8"/>`;
+                svg += `<line x1="${size}" y1="0" x2="0" y2="${size}" stroke="red" stroke-width="4" opacity="0.8"/>`;
+            }
+
+            svg += `</svg>`;
+            return svg;
+        }
+
+        // داده‌های سوالات (فقط 5 سوال منتخب)
+        // t=1: عدد صحیح منهای مخلوط
+        // t=2: عدد مخلوط منهای صحیح
+        const questions = [
+            {t:1, w1:5, w2:2, n:1, d:4},   // سوال 1: 5 منهای 2 و 1/4
+            {t:2, w1:4, n:2, d:3, w2:1},   // سوال 2: 4 و 2/3 منهای 1
+            {t:1, w1:3, w2:1, n:1, d:2},   // سوال 3: 3 منهای 1 و 1/2
+            {t:2, w1:6, n:3, d:5, w2:2},   // سوال 4: 6 و 3/5 منهای 2
+            {t:1, w1:4, w2:1, n:2, d:3}    // سوال 5: 4 منهای 1 و 2/3
+        ];
+
+        let score = 0;
+        const container = document.getElementById('quiz-container');
+
+        questions.forEach((q, index) => {
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            // ساخت صورت سوال
+            let problemHTML = '';
+            if (q.t === 1) { // حالت: 7 - 3 1/4
+                problemHTML = `
+                    ${renderFraction(q.w1, null, null)}
+                    <span class="operator">-</span>
+                    ${renderFraction(q.w2, q.n, q.d)}
+                    <span class="operator">=</span>
+                `;
+            } else { // حالت: 5 2/3 - 1
+                problemHTML = `
+                    ${renderFraction(q.w1, q.n, q.d)}
+                    <span class="operator">-</span>
+                    ${renderFraction(q.w2, null, null)}
+                    <span class="operator">=</span>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="math-row">${problemHTML}</div>
+                
+                <div class="inputs-area">
+                    <input type="number" class="inp-w" id="ans-w-${index}" placeholder="؟">
+                    <div class="inp-frac-col">
+                        <input type="number" class="inp-n" id="ans-n-${index}" placeholder="؟">
+                        <div class="frac-sep"></div>
+                        <input type="number" class="inp-d" id="ans-d-${index}" placeholder="؟">
+                    </div>
+                </div>
+
+                <button class="btn-check" onclick="checkAnswer(${index})">بررسی</button>
+                
+                <div class="feedback-container" id="fb-${index}">
+                    <div class="feedback-text" id="fb-text-${index}"></div>
+                    <div class="visuals-row" id="visuals-${index}"></div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+
+        function checkAnswer(idx) {
+            const q = questions[idx];
+            const wVal = parseInt(document.getElementById(`ans-w-${idx}`).value);
+            const nVal = parseInt(document.getElementById(`ans-n-${idx}`).value);
+            const dVal = parseInt(document.getElementById(`ans-d-${idx}`).value);
+            
+            if(isNaN(wVal) || isNaN(nVal) || isNaN(dVal)) {
+                alert('لطفا تمام خانه‌ها را پر کنید');
+                return;
+            }
+
+            let correctW, correctN, correctD;
+            let visualHTML = "";
+
+            // محاسبه پاسخ و تولید شکل
+            if (q.t === 1) {
+                // تفریق عدد صحیح از مخلوط
+                correctW = q.w1 - q.w2 - 1;
+                correctN = q.d - q.n;
+                correctD = q.d;
+
+                // تولید شکل توضیحی (حذف از راست)
+                const totalShapes = q.w1;
+                const fullCrossCount = q.w2;
+                const partialCrossCount = q.n;
+
+                // ایندکس شروع حذف کامل (از سمت راست)
+                const startFullCross = totalShapes - fullCrossCount + 1; 
+
+                // شکل کسری که باید خط بخورد: یکی قبل از شروع کامل‌ها
+                const partialCrossIndex = startFullCross - 1; 
+
+                for(let i=1; i<=totalShapes; i++) {
+                    let isFull = false;
+                    let partsToCross = 0;
+
+                    if(i >= startFullCross) isFull = true;
+                    else if (i === partialCrossIndex) partsToCross = partialCrossCount;
+
+                    visualHTML += createShapeSVG(q.d, q.d, isFull, partsToCross);
+                }
+
+            } else {
+                // تفریق عدد مخلوط از صحیح
+                correctW = q.w1 - q.w2;
+                correctN = q.n;
+                correctD = q.d;
+
+                // تولید شکل توضیحی
+                const fullShapesCount = q.w1;
+                const fullCrossCount = q.w2;
+                
+                // حذف از راست‌ترین کامل‌ها
+                const startFullCross = fullShapesCount - fullCrossCount + 1;
+
+                for(let i=1; i<=fullShapesCount; i++) {
+                    let isFull = (i >= startFullCross);
+                    visualHTML += createShapeSVG(q.d, q.d, isFull, 0);
+                }
+                // شکل کسری آخر
+                visualHTML += createShapeSVG(q.d, q.n, false, 0);
+            }
+
+            const fbContainer = document.getElementById(`fb-${idx}`);
+            const fbText = document.getElementById(`fb-text-${idx}`);
+            const visualsDiv = document.getElementById(`visuals-${idx}`);
+            const card = fbContainer.parentElement;
+
+            fbContainer.style.display = 'block';
+            visualsDiv.innerHTML = visualHTML;
+
+            if(wVal === correctW && nVal === correctN && dVal === correctD) {
+                score += 20; // هر سوال ۲۰ امتیاز چون ۵ سوال داریم
+                document.getElementById('score-display').innerText = toPersian(score);
+                fbText.innerHTML = `<span style="color:green">✅ عالی! درست گفتی. (حذف از راست انجام شد)</span>`;
+                card.classList.add('correct-mode');
+                card.querySelector('button').style.display = 'none';
+            } else {
+                fbText.innerHTML = `<span style="color:red">❌ اشتباه شد. پاسخ صحیح: ${toPersian(correctW)} و ${toPersian(correctN)}/${toPersian(correctD)}</span><br>به روش حذف از راست دقت کن:`;
+                card.classList.add('wrong-mode');
+            }
+        }
+
+    </script>
+</body>
+</html>
