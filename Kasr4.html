@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>کاربرگ تعاملی جمع و تفریق آقای صرامی</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css');
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border-top: 10px solid #20bf6b;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+
+        .problem-text {
+            background: #e8f6f3;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.4rem; /* Slightly larger for readability */
+            margin-bottom: 30px;
+            line-height: 2.2; /* Increased line height for vertical fractions */
+            border-right: 6px solid #20bf6b;
+        }
+
+        /* --- NEW: INLINE VERTICAL FRACTION STYLES --- */
+        .inline-mixed {
+            display: inline-flex;
+            align-items: center;
+            direction: ltr; /* Force number direction */
+            vertical-align: middle;
+            margin: 0 5px;
+            font-weight: bold;
+        }
+
+        .inline-frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-left: 5px;
+            font-size: 0.85em;
+            vertical-align: middle;
+        }
+
+        .inline-frac .top {
+            border-bottom: 2px solid currentColor; /* Matches the text color */
+            padding: 0 3px;
+            line-height: 1.1;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+
+        .inline-frac .bottom {
+            padding: 2px 3px 0 3px;
+            line-height: 1.1;
+            display: block;
+            width: 100%;
+            text-align: center;
+        }
+        /* ------------------------------------------- */
+
+        /* MATH INPUT STYLES - STRICT LTR */
+        .math-container {
+            direction: ltr;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1.5rem;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px dashed #dcdcdc;
+            min-height: 100px;
+        }
+
+        .step-group {
+            display: inline-flex;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-right: 15px;
+        }
+
+        .mixed-number {
+            display: inline-flex;
+            align-items: center;
+            margin: 0 5px;
+        }
+
+        .mixed-number input.integer-input {
+            width: 45px;
+            height: 45px;
+            font-size: 1.2rem;
+            text-align: center;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            margin-right: 5px;
+        }
+
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+        }
+
+        .fraction input {
+            width: 45px;
+            height: 40px;
+            font-size: 1rem;
+            text-align: center;
+            border: 2px solid #bdc3c7;
+            border-radius: 6px;
+            margin: 2px 0;
+        }
+
+        .frac-line {
+            width: 100%;
+            height: 2px;
+            background-color: #333;
+            margin: 2px 0;
+        }
+
+        input:focus { outline: none; border-color: #3498db; transform: scale(1.05); transition: 0.2s; }
+        input.correct { background-color: #d4edda; border-color: #20bf6b; color: #155724; }
+        input.wrong { background-color: #f8d7da; border-color: #eb3b5a; color: #721c24; animation: shake 0.3s; }
+
+        .symbol { font-weight: bold; margin: 0 8px; font-size: 1.6rem; color: #555; }
+        .op-select { font-size: 1.2rem; padding: 5px; border-radius: 5px; border: 2px solid #bdc3c7; }
+
+        /* MODAL */
+        .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); overflow: auto; }
+        .modal-content { background-color: #fff; margin: 5% auto; padding: 25px; border-radius: 15px; width: 90%; max-width: 700px; text-align: center; position: relative; direction: rtl; }
+        
+        .modal-arrow { color: #eb3b5a; font-size: 2rem; margin: 10px 0; display: block; }
+        .vertical-text { writing-mode: vertical-rl; text-orientation: mixed; display: inline-block; font-size: 0.9rem; color: #eb3b5a; height: 100px; }
+        
+        .simple-box { border: 3px dashed #20bf6b; background: #f0fff4; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        
+        .mapping-box { margin-top: 20px; text-align: right; border-top: 1px solid #eee; padding-top: 20px; }
+        .mapping-row { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 15px; font-size: 1.1rem; }
+        
+        .btn { background: #20bf6b; color: white; border: none; padding: 10px 25px; font-size: 1.1rem; border-radius: 8px; cursor: pointer; margin-top: 10px; }
+        .btn:hover { background: #1eb163; }
+
+        /* TOAST */
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 200; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 1rem; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 3.5s; }
+        
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        .method-title { width:100%; color:#7f8c8d; font-size:1rem; margin-top:20px; border-bottom:1px solid #ddd; padding-bottom:5px; margin-bottom:10px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>کاربرگ تعاملی جمع و تفریق آقای صرامی</h1>
+    
+    <div id="problem-container">
+        <!-- Text loads here -->
+    </div>
+
+    <h3 class="method-title">روش اول: تبدیل به کسر بزرگتر از واحد</h3>
+    <div id="math-area-1" class="math-container">
+        <!-- Math Method 1 loads here -->
+    </div>
+
+    <h3 class="method-title hidden" id="title-m2">روش دوم: تفریق عدد صحیح و انتقال</h3>
+    <div id="math-area-2" class="math-container hidden" style="display:none;">
+        <!-- Math Method 2 loads here -->
+    </div>
+</div>
+
+<!-- MODAL -->
+<div id="strategy-modal" class="modal">
+    <div class="modal-content">
+        <h2 style="color:#c0392b">راهبرد حل مسئله ساده‌تر</h2>
+        
+        <!-- Original Problem Text in Modal -->
+        <div id="modal-problem-text" style="background:#eee; padding:15px; border-radius:8px; line-height:2.2; text-align:right;"></div>
+        
+        <div style="display:flex; justify-content:center; align-items:center; margin-top:10px;">
+            <span class="vertical-text">مسئله ساده‌تر</span>
+            <span class="modal-arrow">⬇</span>
+        </div>
+
+        <div class="simple-box">
+            <!-- Simple Problem Description -->
+            <p id="modal-simple-desc" style="font-weight:bold; margin-bottom:15px; font-size:1.2rem;"></p>
+            
+            <!-- Simple Math Interactive -->
+            <div style="direction:ltr; display:flex; justify-content:center; align-items:center; gap:10px;">
+                <input type="number" id="sim-n1" class="integer-input" style="width:60px; height:50px; text-align:center; font-size:1.5rem;">
+                <select id="sim-op" class="op-select">
+                    <option value="?">?</option>
+                    <option value="-">-</option>
+                    <option value="+">+</option>
+                    <option value="*">×</option>
+                    <option value="/">÷</option>
+                </select>
+                <input type="number" id="sim-n2" class="integer-input" style="width:60px; height:50px; text-align:center; font-size:1.5rem;">
+                <span style="font-size:2rem;">=</span>
+                <span id="sim-res" style="font-size:2rem; color:#7f8c8d;">؟</span>
+            </div>
+            <button class="btn" onclick="checkSimpleStrategy()">بررسی پاسخ ساده</button>
+        </div>
+
+        <div id="mapping-area" class="mapping-box" style="display:none;">
+            <h3>حالا ارتباطش رو پیدا کن:</h3>
+            
+            <div class="mapping-row">
+                <span style="margin-left:10px;">به جای عدد <span id="map-lbl-1" style="color:#e67e22; font-weight:bold; font-size:1.4rem;"></span> چه عددی بود؟</span>
+                <span style="font-size:1.5rem; margin:0 10px;">⬅</span>
+                <div style="direction:ltr;" class="mixed-number">
+                    <input type="number" id="map-w1" class="integer-input">
+                    <div class="fraction">
+                        <input type="number" id="map-n1">
+                        <div class="frac-line"></div>
+                        <input type="number" id="map-d1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mapping-row">
+                <span style="margin-left:10px;">به جای عدد <span id="map-lbl-2" style="color:#e67e22; font-weight:bold; font-size:1.4rem;"></span> چه عددی بود؟</span>
+                <span style="font-size:1.5rem; margin:0 10px;">⬅</span>
+                <div style="direction:ltr;" class="mixed-number">
+                    <input type="number" id="map-w2" class="integer-input">
+                    <div class="fraction">
+                        <input type="number" id="map-n2">
+                        <div class="frac-line"></div>
+                        <input type="number" id="map-d2">
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align:center;">
+                <button class="btn" style="background:#8e44ad;" onclick="checkMapping()">آفرین! فهمیدم</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="toast">پیغام سیستم</div>
+
+<script>
+/* --- CONFIG & DATA --- */
+const problems = [
+    { id:1, w1:5, n1:1, d1:12, w2:2, n2:5, d2:16, text:"کشاورزی {1} هکتار زمین دارد. {2} هکتار را شخم زد. باقی‌مانده چقدر است؟", sim:{n1:5, n2:2} },
+    { id:2, w1:6, n1:1, d1:3, w2:2, n2:7, d2:9, text:"طناب بلندی {1} متر است. {2} متر بریده شد. چقدر مانده؟", sim:{n1:6, n2:2} },
+    { id:3, w1:4, n1:1, d1:4, w2:1, n2:5, d2:8, text:"ظرفی {1} لیتر آب دارد. {2} لیتر تبخیر شد.", sim:{n1:4, n2:1} },
+    { id:4, w1:7, n1:1, d1:6, w2:3, n2:5, d2:12, text:"مسافری {1} کیلومتر مسیر دارد. {2} کیلومتر رفته است.", sim:{n1:7, n2:3} },
+    { id:5, w1:8, n1:1, d1:4, w2:2, n2:2, d2:6, text:"وزن جعبه اول {1} کیلوگرم و دوم {2} کیلوگرم است. اختلاف؟", sim:{n1:8, n2:2} },
+    { id:6, w1:5, n1:5, d1:24, w2:1, n2:11, d2:16, text:"طول {1} متر و عرض {2} متر است. طول چقدر بیشتر است؟", sim:{n1:5, n2:1} },
+    { id:7, w1:9, n1:2, d1:15, w2:4, n2:1, d2:3, text:"مخزنی {1} لیتر نفت دارد. {2} لیتر مصرف شد.", sim:{n1:9, n2:4} },
+    { id:8, w1:6, n1:3, d1:10, w2:2, n2:8, d2:15, text:"پارچه‌ای {1} متر بود. خیاط {2} متر را برید.", sim:{n1:6, n2:2} },
+    { id:9, w1:10, n1:1, d1:4, w2:3, n2:1, d2:2, text:"علی {1} ساعت و رضا {2} ساعت خوابیدند. اختلاف؟", sim:{n1:10, n2:3} },
+    { id:10, w1:4, n1:2, d1:9, w2:1, n2:1, d2:3, text:"استخر {1} متر عمق دارد. {2} متر آن لجن است.", sim:{n1:4, n2:1} },
+    { id:11, w1:8, n1:1, d1:6, w2:5, n2:3, d2:8, text:"از {1} تن بار، {2} تن فاسد شد.", sim:{n1:8, n2:5} },
+    { id:12, w1:7, n1:2, d1:12, w2:2, n2:3, d2:8, text:"باغبان {1} کیلو کود داشت. {2} کیلو مصرف کرد.", sim:{n1:7, n2:2} },
+    { id:13, w1:5, n1:3, d1:20, w2:2, n2:4, d2:10, text:"فاصله دو شهر {1} کیلومتر است. {2} کیلومتر طی شد.", sim:{n1:5, n2:2} },
+    { id:14, w1:12, n1:1, d1:18, w2:5, n2:5, d2:12, text:"از {1} متر پارچه، {2} متر فروخته شد.", sim:{n1:12, n2:5} },
+    { id:15, w1:6, n1:1, d1:30, w2:3, n2:2, d2:15, text:"تانکر {1} لیتر آب داشت. {2} لیتر خالی شد.", sim:{n1:6, n2:3} }
+];
+
+let currentIdx = 0;
+let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+/* --- AUDIO & TOAST --- */
+function playSound(isCorrect) {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    if (isCorrect) {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+    } else {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+        osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+        osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+    }
+}
+
+function toast(msg, color='#333') {
+    const x = document.getElementById("toast");
+    x.innerText = msg;
+    x.style.backgroundColor = color;
+    x.className = "show";
+    setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+}
+
+/* --- MATH LOGIC --- */
+function gcd(a, b) { return !b ? a : gcd(b, a % b); }
+function lcm(a, b) { return (a * b) / gcd(a, b); }
+
+function initGame() {
+    loadProblem(0);
+}
+
+// Helper to generate Vertical Fractions for Text
+function formatMixedNum(w, n, d, color) {
+    return `<span class="inline-mixed" style="color:${color}">
+                ${w}
+                <span class="inline-frac">
+                    <span class="top">${n}</span>
+                    <span class="bottom">${d}</span>
+                </span>
+            </span>`;
+}
+
+function loadProblem(idx) {
+    if (idx >= problems.length) {
+        document.querySelector('.container').innerHTML = "<h1 style='color:#20bf6b'>پایان تمام تمرین‌ها! آفرین قهرمان.</h1>";
+        return;
+    }
+    
+    const p = problems[idx];
+    // Format text with Vertical Fractions
+    const val1 = formatMixedNum(p.w1, p.n1, p.d1, '#2980b9');
+    const val2 = formatMixedNum(p.w2, p.n2, p.d2, '#c0392b');
+
+    const txt = p.text.replace("{1}", val1).replace("{2}", val2);
+    
+    document.getElementById('problem-container').innerHTML = `<div class="problem-text">${txt}</div>`;
+    
+    // Reset Areas
+    document.getElementById('math-area-1').innerHTML = '';
+    document.getElementById('math-area-2').innerHTML = '';
+    document.getElementById('math-area-2').style.display = 'none';
+    document.getElementById('title-m2').classList.add('hidden');
+    
+    // Start Method 1
+    addStep_Substitution(1);
+}
+
+/* HTML GENERATORS */
+function inputMixed(id, expW, expN, expD) {
+    return `
+    <div class="mixed-number" id="grp_${id}">
+        <input type="number" class="integer-input" id="in_w_${id}" data-val="${expW}" placeholder="عدد">
+        <div class="fraction">
+            <input type="number" id="in_n_${id}" data-val="${expN}" placeholder="صورت">
+            <div class="frac-line"></div>
+            <input type="number" id="in_d_${id}" data-val="${expD}" placeholder="مخرج">
+        </div>
+    </div>`;
+}
+
+function inputFraction(id, expN, expD) {
+    return `
+    <div class="fraction" id="grp_${id}">
+        <input type="number" id="in_n_${id}" data-val="${expN}" placeholder="صورت">
+        <div class="frac-line"></div>
+        <input type="number" id="in_d_${id}" data-val="${expD}" placeholder="مخرج">
+    </div>`;
+}
+
+/* STEP LOGIC */
+function addStep_Substitution(method) {
+    const p = problems[currentIdx];
+    const area = document.getElementById(method === 1 ? 'math-area-1' : 'math-area-2');
+    
+    const idPrefix = method === 1 ? 'm1_s1' : 'm2_s1';
+    
+    const html = `
+        <div class="step-group" id="step_${idPrefix}">
+            ${inputMixed(idPrefix+'_a', p.w1, p.n1, p.d1)}
+            <span class="symbol">-</span>
+            ${inputMixed(idPrefix+'_b', p.w2, p.n2, p.d2)}
+            <span class="symbol">=</span>
+        </div>
+    `;
+    area.insertAdjacentHTML('beforeend', html);
+    attachEvents(idPrefix, 'substitution', method);
+}
+
+function addStep_M1_Improper() {
+    const p = problems[currentIdx];
+    const area = document.getElementById('math-area-1');
+    const imp1 = (p.w1 * p.d1) + p.n1;
+    const imp2 = (p.w2 * p.d2) + p.n2;
+    const id = 'm1_s2';
+
+    const html = `
+        <div class="step-group" id="step_${id}">
+            ${inputFraction(id+'_a', imp1, p.d1)}
+            <span class="symbol">-</span>
+            ${inputFraction(id+'_b', imp2, p.d2)}
+            <span class="symbol">=</span>
+        </div>
+    `;
+    area.insertAdjacentHTML('beforeend', html);
+    attachEvents(id, 'improper', 1);
+}
+
+function addStep_M1_LCD() {
+    const p = problems[currentIdx];
+    const area = document.getElementById('math-area-1');
+    const L = lcm(p.d1, p.d2);
+    const imp1 = (p.w1 * p.d1) + p.n1;
+    const imp2 = (p.w2 * p.d2) + p.n2;
+    const n1 = imp1 * (L / p.d1);
+    const n2 = imp2 * (L / p.d2);
+    const id = 'm1_s3';
+
+    const html = `
+        <div class="step-group" id="step_${id}">
+            ${inputFraction(id+'_a', n1, L)}
+            <span class="symbol">-</span>
+            ${inputFraction(id+'_b', n2, L)}
+            <span class="symbol">=</span>
+        </div>
+    `;
+    area.insertAdjacentHTML('beforeend', html);
+    attachEvents(id, 'lcd', 1);
+}
+
+function addStep_M1_Result() {
+    const p = problems[currentIdx];
+    const area = document.getElementById('math-area-1');
+    const L = lcm(p.d1, p.d2);
+    const imp1 = (p.w1 * p.d1) + p.n1;
+    const imp2 = (p.w2 * p.d2) + p.n2;
+    const n1 = imp1 * (L / p.d1);
+    const n2 = imp2 * (L / p.d2);
+    const res = n1 - n2;
+    const id = 'm1_s4';
+
+    const html = `
+        <div class="step-group" id="step_${id}">
+            ${inputFraction(id+'_a', res, L)}
+        </div>
+    `;
+    area.insertAdjacentHTML('beforeend', html);
+    attachEvents(id, 'result_m1', 1);
+}
+
+function startMethod2() {
+    document.getElementById('title-m2').classList.remove('hidden');
+    document.getElementById('math-area-2').style.display = 'flex';
+    addStep_Substitution(2);
+}
+
+function addStep_M2_WholeSub() {
+    const p = problems[currentIdx];
+    const area = document.getElementById('math-area-2');
+    const wDiff = p.w1 - p.w2;
+    const id = 'm2_s2';
+
+    const html = `
+        <div class="step-group" id="step_${id}">
+            ${inputMixed(id+'_a', wDiff, p.n1, p.d1)}
+            <span class="symbol">-</span>
+            ${inputFraction(id+'_b', p.n2, p.d2)}
+            <span class="symbol">=</span>
+        </div>
+    `;
+    area.insertAdjacentHTML('beforeend', html);
+    attachEvents(id, 'whole_sub', 2);
+}
+
+function addStep_M2_LCD() {
+    const p = problems[currentIdx];
+    const area = document.getElementById('math-area-2');
+    const wDiff = p.w1 - p.w2;
+    const L = lcm(p.d1, p.d2);
+    const newN1 = p.n1 * (L / p.d1);
+    const newN2 = p.n2 * (L / p.d2);
+    const id = 'm2_s3';
+
+    const html = `
+        <div class="step-group" id="step_${id}">
+            ${inputMixed(id+'_a', wDiff, newN1, L)}
+            <span class="symbol">-</span>
+            ${inputFraction(id+'_b', newN2, L)}
+            <span class="symbol">=</span>
+        </div>
+    `;
+    area.insertAdjacentHTML('beforeend', html);
+    attachEvents(id, 'lcd_m2', 2);
+}
+
+function addStep_M2_Borrow() {
+    const p = problems[currentIdx];
+    const area = document.getElementById('math-area-2');
+    const wDiff = p.w1 - p.w2;
+    const L = lcm(p.d1, p.d2);
+    const newN1 = p.n1 * (L / p.d1);
+    const newN2 = p.n2 * (L / p.d2);
+    const wNew = wDiff - 1;
+    const nNew = newN1 + L;
+    const id = 'm2_s4';
+
+    const html = `
+        <div class="step-group" id="step_${id}">
+            ${inputMixed(id+'_a', wNew, nNew, L)}
+            <span class="symbol">-</span>
+            ${inputFraction(id+'_b', newN2, L)}
+            <span class="symbol">=</span>
+        </div>
+    `;
+    area.insertAdjacentHTML('beforeend', html);
+    attachEvents(id, 'borrow', 2);
+}
+
+function addStep_M2_Result() {
+    const p = problems[currentIdx];
+    const area = document.getElementById('math-area-2');
+    const wDiff = p.w1 - p.w2;
+    const L = lcm(p.d1, p.d2);
+    const newN1 = p.n1 * (L / p.d1);
+    const newN2 = p.n2 * (L / p.d2);
+    const wNew = wDiff - 1;
+    const nNew = newN1 + L;
+    const resN = nNew - newN2;
+    const id = 'm2_s5';
+
+    const html = `
+        <div class="step-group" id="step_${id}">
+            ${inputMixed(id+'_a', wNew, resN, L)}
+        </div>
+    `;
+    area.insertAdjacentHTML('beforeend', html);
+    attachEvents(id, 'result_m2', 2);
+}
+
+/* VALIDATION */
+function attachEvents(stepId, type, method) {
+    const inputs = document.querySelectorAll(`#step_${stepId} input`);
+    
+    inputs.forEach(inp => {
+        inp.addEventListener('blur', function() {
+            if (this.value === '') return;
+            
+            const correctVal = parseInt(this.getAttribute('data-val'));
+            const userVal = parseInt(this.value);
+            
+            // Denom check
+            if (this.id.includes('_n') || this.id.includes('_w')) {
+                let dId = this.id.replace('_n', '_d').replace('_w', '_d');
+                if (this.id.includes('_n') && !document.getElementById(dId).value && !document.getElementById(dId).disabled) {
+                    toast("اول مخرج را بنویس!", "#e67e22");
+                    return;
+                }
+            }
+
+            if (userVal === correctVal) {
+                this.classList.add('correct');
+                this.classList.remove('wrong');
+                this.disabled = true;
+                playSound(true);
+                checkCompletion(stepId, type, method);
+            } else {
+                this.classList.add('wrong');
+                playSound(false);
+                handleError(type, this, userVal, correctVal);
+                this.value = '';
+                setTimeout(() => this.focus(), 100);
+            }
+        });
+        
+        if (inp.id.includes('_n')) {
+            inp.addEventListener('focus', function() {
+                let dId = this.id.replace('_n', '_d');
+                let dInp = document.getElementById(dId);
+                if (dInp && !dInp.value) {
+                    toast("اول مخرج را پیدا کن!", "#e67e22");
+                    dInp.focus();
+                }
+            });
+        }
+    });
+}
+
+function checkCompletion(stepId, type, method) {
+    const inputs = document.querySelectorAll(`#step_${stepId} input`);
+    const allCorrect = Array.from(inputs).every(i => i.classList.contains('correct'));
+    
+    if (allCorrect) {
+        setTimeout(() => {
+            if (type === 'substitution' && method === 1) addStep_M1_Improper();
+            if (type === 'improper') addStep_M1_LCD();
+            if (type === 'lcd') addStep_M1_Result();
+            if (type === 'result_m1') startMethod2();
+            
+            if (type === 'substitution' && method === 2) addStep_M2_WholeSub();
+            if (type === 'whole_sub') addStep_M2_LCD();
+            if (type === 'lcd_m2') addStep_M2_Borrow();
+            if (type === 'borrow') addStep_M2_Result();
+            if (type === 'result_m2') {
+                toast("عالی! مسئله بعدی...", "#20bf6b");
+                setTimeout(() => { currentIdx++; loadProblem(currentIdx); }, 2000);
+            }
+        }, 300);
+    }
+}
+
+function handleError(type, input, uVal, cVal) {
+    const p = problems[currentIdx];
+    if (type === 'substitution') {
+        toast("دقت کن! ببین چی خواسته.", "#c0392b");
+        openModal();
+    }
+    if (type === 'improper') {
+        if (input.id.includes('_d')) toast("مخرج تغییر نمی‌کند.", "#c0392b");
+        else toast("واحدها را در مخرج ضرب و با صورت جمع کن.", "#e67e22");
+    }
+    if (type.includes('lcd')) {
+        if (input.id.includes('_d')) {
+             if (uVal % p.d1 == 0 && uVal % p.d2 == 0) toast("کوچک‌ترین مخرج مشترک را بنویس.", "#f39c12");
+             else toast("مخرج مشترک (مضرب هر دو) را پیدا کن.", "#c0392b");
+        } else {
+            toast("صورت را به نسبت مخرج ضرب کن.", "#2980b9");
+        }
+    }
+    if (type === 'whole_sub') {
+        if (input.id.includes('_w')) toast("دو عدد صحیح را از هم کم کن.", "#e74c3c");
+    }
+    if (type === 'borrow') {
+        if (input.id.includes('_w')) toast("یک واحد از عدد صحیح کم کن.", "#e74c3c");
+        if (input.id.includes('_n')) toast("یک واحد کامل (به اندازه مخرج) به صورت اضافه کن.", "#8e44ad");
+    }
+}
+
+/* MODAL */
+function openModal() {
+    const p = problems[currentIdx];
+    const m = document.getElementById('strategy-modal');
+    m.style.display = 'block';
+    
+    // Inject formatted HTML instead of simple text to show correct fractions
+    const val1 = formatMixedNum(p.w1, p.n1, p.d1, '#2980b9');
+    const val2 = formatMixedNum(p.w2, p.n2, p.d2, '#c0392b');
+    const problemText = p.text.replace("{1}", val1).replace("{2}", val2);
+    
+    document.getElementById('modal-problem-text').innerHTML = problemText;
+    
+    // Simple Text Description (Plain numbers)
+    document.getElementById('modal-simple-desc').innerText = p.text.replace("{1}", p.sim.n1).replace("{2}", p.sim.n2).replace(/\//g, ''); // Clean up slightly
+    
+    // Mapping Labels
+    document.getElementById('map-lbl-1').innerText = p.sim.n1;
+    document.getElementById('map-lbl-2').innerText = p.sim.n2;
+    
+    // Reset inputs
+    document.getElementById('sim-n1').value = '';
+    document.getElementById('sim-n2').value = '';
+    document.getElementById('sim-op').value = '?';
+    document.getElementById('sim-res').innerText = '؟';
+    document.getElementById('mapping-area').style.display = 'none';
+    ['map-w1','map-n1','map-d1','map-w2','map-n2','map-d2'].forEach(id => document.getElementById(id).value = '');
+}
+
+function checkSimpleStrategy() {
+    const p = problems[currentIdx];
+    const n1 = parseInt(document.getElementById('sim-n1').value);
+    const n2 = parseInt(document.getElementById('sim-n2').value);
+    const op = document.getElementById('sim-op').value;
+    
+    if (n1 === p.sim.n1 && n2 === p.sim.n2 && op === '-') {
+        document.getElementById('sim-res').innerText = n1 - n2;
+        playSound(true);
+        document.getElementById('mapping-area').style.display = 'block';
+    } else {
+        playSound(false);
+        toast("دقت کن! اعداد مسئله ساده را بنویس.", "#c0392b");
+    }
+}
+
+function checkMapping() {
+    const p = problems[currentIdx];
+    const mw1 = parseInt(document.getElementById('map-w1').value);
+    const mn1 = parseInt(document.getElementById('map-n1').value);
+    const md1 = parseInt(document.getElementById('map-d1').value);
+    
+    const mw2 = parseInt(document.getElementById('map-w2').value);
+    const mn2 = parseInt(document.getElementById('map-n2').value);
+    const md2 = parseInt(document.getElementById('map-d2').value);
+
+    if (mw1==p.w1 && mn1==p.n1 && md1==p.d1 && mw2==p.w2 && mn2==p.n2 && md2==p.d2) {
+        playSound(true);
+        toast("آفرین! حالا جایگذاری کن.", "#20bf6b");
+        setTimeout(() => { document.getElementById('strategy-modal').style.display = 'none'; }, 1500);
+    } else {
+        playSound(false);
+        toast("دقت کن! اعداد مخلوط مسئله اصلی را بنویس.", "#c0392b");
+    }
+}
+
+window.onload = initGame;
+</script>
+</body>
+</html>
