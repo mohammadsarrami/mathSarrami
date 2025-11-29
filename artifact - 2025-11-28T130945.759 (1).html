@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آزمون هوش و خلاقیت ریاضی</title>
+    <!-- فراخوانی فونت وزیرمتن برای نمایش زیبای فارسی -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <!-- کتابخانه EmailJS -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f0f4f8;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 700px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1, h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Vazirmatn', sans-serif;
+            transition: background 0.3s;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            width: 70%;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        /* استایل تایمر */
+        #timer-box {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 50px;
+            display: inline-block;
+            font-weight: bold;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(231, 76, 60, 0.3);
+        }
+
+        /* استایل سوالات */
+        .question-box {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.8;
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 10px;
+            border-right: 5px solid #3498db;
+        }
+
+        .options-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #bdc3c7;
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 16px;
+            transition: all 0.2s;
+            text-align: right;
+        }
+
+        .option-btn:hover {
+            background: #ecf0f1;
+            border-color: #3498db;
+        }
+
+        .option-btn.selected {
+            background: #3498db;
+            color: white;
+            border-color: #2980b9;
+        }
+
+        /* استایل مرور پاسخ‌ها */
+        .review-item {
+            text-align: right;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            background: #fafafa;
+        }
+
+        .review-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .review-option {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .correct-answer {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .wrong-answer {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-message {
+            margin-top: 15px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+
+        /* صفحات مخفی */
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- صفحه ورود -->
+    <div class="container" id="start-screen">
+        <h1>آزمون هوش و خلاقیت ریاضی 🧠</h1>
+        <p>سلام قهرمان! لطفاً نام و نام خانوادگی خودت رو وارد کن:</p>
+        <input type="text" id="student-name" placeholder="نام و نام خانوادگی">
+        <br>
+        <button class="btn" onclick="startQuiz()">شروع آزمون</button>
+    </div>
+
+    <!-- صفحه آزمون -->
+    <div class="container hidden" id="quiz-screen">
+        <div id="timer-box">زمان باقی‌مانده: <span id="time-display">17:00</span></div>
+        
+        <div id="question-container">
+            <!-- سوالات اینجا بارگذاری می‌شوند -->
+        </div>
+
+        <button class="btn" id="next-btn" onclick="nextQuestion()">سوال بعدی</button>
+    </div>
+
+    <!-- صفحه نتایج -->
+    <div class="container hidden" id="result-screen">
+        <h2>🏁 پایان آزمون</h2>
+        <h3 id="final-score"></h3>
+        <p id="email-status" class="status-message">در حال ارسال نمره به معلم...</p>
+        
+        <hr>
+        <h3>مرور پاسخ‌نامه تشریحی</h3>
+        <div id="review-container">
+            <!-- مرور سوالات اینجا نمایش داده می‌شود -->
+        </div>
+    </div>
+
+    <script>
+        // --- تنظیمات معلم ---
+        const PUBLIC_KEY = "DK8m8s8ukQGrLJ77b"; 
+        const SERVICE_ID = "service_ij2ol5e";
+        const TEMPLATE_ID = "template_fvuuxeh"; // قالب جدید شما
+        const EXAM_TIME_MINUTES = 17; // زمان 17 دقیقه
+
+        // --- سوالات (طبق متن ارسالی شما) ---
+        const questions = [
+            {
+                text: "1- دوستانی به نام‌های علیرضا، امیر، سعید و احمد در مسابقات تنیس روی میز شرکت کردند. آن‌ها تصمیم گرفتند با والدین خود شوخی کنند و هر کدام نیمی از حقیقت را بگویند (یک گزاره درست، یک گزاره نادرست). گزاره‌ها:\n- علی: سعید دوم شد و من سوم شدم.\n- رضا: من اول شدم ولی امیر دوم شد.\n- امیر: من مقام سوم را کسب کردم اما رضا آخر شد.\n- سعید: من دوم شدم و احمد چهارم شد.\n- احمد: من چهارم شدم اما علی خوش‌شانس بود و اول شد.\nکدام عبارت درست است؟",
+                options: ["1) سعید اول و امیر دوم شد", "2) علی اول و امیر دوم شد", "3) سعید اول و احمد دوم شد", "4) رضا اول و سعید دوم شد"],
+                correct: 0 // گزینه 1
+            },
+            {
+                text: "2- اگر فقط یک نفر از بین این سه نفر راست گفته باشد، آقای عزیزی چند فرزند دارد؟\n- شخص اول: آقای عزیزی حداقل ۵ فرزند دارد.\n- شخص دوم: نه او کمتر از ۵ فرزند دارد.\n- شخص سوم: من مطمئنم که آقای عزیزی دست‌کم یک فرزند دارد.",
+                options: ["۱) بین یک تا ۵ فرزند", "۲) فرزندی ندارد", "۳) یک فرزند", "۴) ۵ فرزند"],
+                correct: 1 // گزینه 2
+            },
+            {
+                text: "3- مینا، احمد، سارا و رضا برای صبحانه هر یک غذای مورد علاقه خود را خوردند (کره، ذرت، شیر و تخم‌مرغ). با توجه به سرنخ‌ها، چه کسی ذرت خورده و چه کسی سمت راست مینا نشسته است؟\n- مینا نزد برادر خود که شیر خورد ننشسته بود.\n- خواهری که تخم‌مرغ خورد، در سمت چپ مینا نشسته بود.\n- رضا شیر یا ذرت نخورد.",
+                options: ["1) مینا - احمد", "2) احمد - رضا", "3) مینا - رضا", "4) احمد - سارا"],
+                correct: 2 // گزینه 3
+            },
+            {
+                text: "4- یک کشاورز سه نوع از پنج نوع محصول (لوبیا، ذرت، کلم، کدو و نخود) را هر سال بر اساس قوانین زیر می‌کارد:\n- اگر ذرت بکارد حتماً لوبیا هم می‌کارد.\n- در هیچ دو سال متوالی کلم کشت نمی‌شود.\n- در هر سال بیش از یک محصول سال قبل را دوباره کشت نمی‌کند.\nاگر سال اول (لوبیا، ذرت و کلم) بکارد، سال سوم چه باید بکارد؟",
+                options: ["1) نخود، ذرت، لوبیا", "2) کلم، نخود، کدو", "3) کدو، نخود، لوبیا", "4) کلم، ذرت، لوبیا"],
+                correct: 2 // گزینه 3
+            },
+            {
+                text: "5- یکی از شش فرزند یک خانواده گلدانی را شکسته است. فقط یک نفر دروغ گفته است. چه کسی گلدان را شکسته؟\n- فرزند اول: فرزند ششم گلدان را نشکسته است.\n- فرزند دوم: فرزند پنجم گلدان را شکسته.\n- فرزند سوم: فرزند چهارم یا پنجم گلدان را شکسته است.\n- فرزند چهارم: فرزند دوم دروغ می‌گوید.",
+                options: ["1) فرزند دوم", "2) فرزند پنجم", "3) فرزند سوم", "4) فرزند چهارم"],
+                correct: 3 // گزینه 4
+            },
+            {
+                text: "6- عدد دهم الگو کدام گزینه است؟\n20, 32, 48, 68, ...",
+                options: ["الف) 272", "ب) 270", "ج) 264", "د) 268"],
+                correct: 0 // گزینه 1
+            },
+            {
+                text: "7- اگر یک پاره‌خط 3 نقطه داشته باشد و پاره‌خط دیگر 4 نقطه باشد. اگر این نقاط را به هم وصل کنیم، حالا چند پاره‌خط داریم؟",
+                options: ["الف) 18", "ب) 21", "ج) 24", "د) 28"],
+                correct: 1 // گزینه 2
+            },
+            {
+                text: "8- اگر روی خطی 10 نقطه مشخص داشته باشیم، حالا اگر 4 نقطه جدید به این نقاط اضافه کنیم به تعداد پاره‌خط‌ها چقدر اضافه می‌شود؟",
+                options: ["الف) 46", "ب) 45", "ج) 35", "د) 36"],
+                correct: 0 // گزینه 1
+            },
+            {
+                text: "9- علی درختی کاشته که هر سال ارتفاعش دو برابر می‌شود. شش سال از کاشت این درخت می‌گذرد، اکنون ارتفاع آن 36 متر است. چند سال طول می‌کشد تا این درخت به نصف این ارتفاع برسد؟",
+                options: ["الف) 2", "ب) 3", "ج) 4", "د) 5"],
+                correct: 3 // گزینه 4
+            },
+            {
+                text: "10- بیستمین عدد مشترک دو الگو کدام است؟\nالگوی اول: 3, 8, 13, 18, ...\nالگوی دوم: 7, 13, 19, 25, ...",
+                options: ["الف) 617", "ب) 583", "ج) 600", "د) 634"],
+                correct: 1 // گزینه 2
+            }
+        ];
+
+        // --- متغیرهای سیستم ---
+        let currentQuestionIndex = 0;
+        let userAnswers = new Array(questions.length).fill(null);
+        let timerInterval;
+        let timeRemaining = EXAM_TIME_MINUTES * 60;
+        let studentName = "";
+
+        // شروع
+        (function(){
+            emailjs.init(PUBLIC_KEY);
+        })();
+
+        function startQuiz() {
+            const nameInput = document.getElementById('student-name');
+            if (nameInput.value.trim() === "") {
+                alert("لطفاً نام خود را وارد کنید!");
+                return;
+            }
+            studentName = nameInput.value.trim();
+            
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            
+            startTimer();
+            loadQuestion();
+        }
+
+        function startTimer() {
+            const display = document.getElementById('time-display');
+            timerInterval = setInterval(() => {
+                let minutes = Math.floor(timeRemaining / 60);
+                let seconds = timeRemaining % 60;
+                
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                
+                display.textContent = minutes + ":" + seconds;
+
+                if (--timeRemaining < 0) {
+                    finishQuiz(true);
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            const container = document.getElementById('question-container');
+            const q = questions[currentQuestionIndex];
+            
+            // دکمه بعدی/پایان
+            const nextBtn = document.getElementById('next-btn');
+            if (currentQuestionIndex === questions.length - 1) {
+                nextBtn.textContent = "ثبت نهایی و پایان آزمون";
+                nextBtn.style.backgroundColor = "#27ae60";
+            } else {
+                nextBtn.textContent = "سوال بعدی";
+                nextBtn.style.backgroundColor = "#3498db";
+            }
+
+            // ساخت HTML سوال
+            let html = `
+                <div class="question-box">
+                    <div class="question-text">سوال ${currentQuestionIndex + 1}: ${q.text.replace(/\n/g, '<br>')}</div>
+                    <div class="options-grid">
+            `;
+
+            q.options.forEach((opt, index) => {
+                const isSelected = userAnswers[currentQuestionIndex] === index ? 'selected' : '';
+                html += `<div class="option-btn ${isSelected}" onclick="selectOption(${index})">${opt}</div>`;
+            });
+
+            html += `</div></div>`;
+            container.innerHTML = html;
+        }
+
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestionIndex] = optionIndex;
+            loadQuestion(); // برای به‌روزرسانی استایل انتخاب شده
+        }
+
+        function nextQuestion() {
+            if (userAnswers[currentQuestionIndex] === null) {
+                alert("لطفاً یک گزینه را انتخاب کنید.");
+                return;
+            }
+
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                finishQuiz(false);
+            }
+        }
+
+        function finishQuiz(isTimeOut) {
+            clearInterval(timerInterval);
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+
+            if (isTimeOut) {
+                alert("زمان شما به پایان رسید!");
+            }
+
+            calculateAndShowResults();
+        }
+
+        function calculateAndShowResults() {
+            let score = 0;
+            let correctCount = 0;
+            let wrongCount = 0;
+            let emailDetails = "";
+
+            questions.forEach((q, index) => {
+                const userAns = userAnswers[index];
+                const isCorrect = userAns === q.correct;
+                
+                if (isCorrect) {
+                    score++;
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                }
+
+                // ساخت متن جزئیات برای ایمیل
+                let status = isCorrect ? "✅ صحیح" : "❌ غلط";
+                let userText = userAns !== null ? q.options[userAns] : "بدون پاسخ";
+                emailDetails += `س ${index + 1}: ${status} (پاسخ دانش‌آموز: ${userText})\n`;
+            });
+
+            // نمایش نمره به دانش‌آموز
+            const finalScoreElement = document.getElementById('final-score');
+            finalScoreElement.textContent = `نمره شما: ${score} از ${questions.length}`;
+
+            // رندر کردن مرور پاسخ‌ها (Review Mode)
+            renderReview();
+
+            // ارسال ایمیل
+            sendResultsEmail(score, correctCount, wrongCount, emailDetails);
+        }
+
+        function renderReview() {
+            const container = document.getElementById('review-container');
+            let html = "";
+
+            questions.forEach((q, index) => {
+                const userAns = userAnswers[index];
+                let optionsHtml = "";
+
+                q.options.forEach((opt, optIndex) => {
+                    let className = "review-option ";
+                    
+                    // منطق رنگ‌بندی:
+                    // اگر گزینه صحیح است -> همیشه سبز شود
+                    // اگر کاربر گزینه‌ای را انتخاب کرده و غلط است -> قرمز شود
+                    
+                    if (optIndex === q.correct) {
+                        className += "correct-answer"; // سبز برای پاسخ صحیح
+                        if (userAns === optIndex) className += " (پاسخ شما ✅)";
+                    } else if (userAns === optIndex) {
+                        className += "wrong-answer"; // قرمز برای انتخاب غلط
+                        className += " (پاسخ شما ❌)";
+                    }
+
+                    optionsHtml += `<div class="${className}">${opt}</div>`;
+                });
+
+                html += `
+                    <div class="review-item">
+                        <div class="review-question">سوال ${index + 1}: ${q.text.replace(/\n/g, '<br>')}</div>
+                        <div>${optionsHtml}</div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function sendResultsEmail(score, correct, wrong, details) {
+            const statusEl = document.getElementById('email-status');
+            
+            const templateParams = {
+                student_name: studentName,
+                score: score,
+                total_questions: questions.length,
+                correct_count: correct,
+                wrong_count: wrong,
+                details: details
+            };
+
+            emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams)
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status, response.text);
+                    statusEl.textContent = "✅ نتایج با موفقیت برای معلم ارسال شد.";
+                    statusEl.style.color = "#27ae60";
+                }, function(error) {
+                    console.log('FAILED...', error);
+                    statusEl.textContent = "⚠️ خطا در ارسال نتایج. لطفا از صفحه عکس بگیرید.";
+                    statusEl.style.color = "#c0392b";
+                });
+        }
+    </script>
+</body>
+</html>
