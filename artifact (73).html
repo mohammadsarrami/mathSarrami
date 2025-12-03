@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدل مساحت - نسخه بزرگ و اصلاح شده</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+    </style>
+
+    <!-- لود کردن MathJax -->
+    <script>
+        window.MathJax = {
+            tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+            svg: { fontCache: 'global' }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        /* استایل پنل ورودی */
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 50px;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            border-bottom: 4px solid #00897b;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #e0f2f1;
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        /* کانتینر مخصوص عدد مخلوط برای نمایش صحیح (عدد صحیح سمت چپ) */
+        .mixed-number-input {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            direction: ltr; /* چپ به راست برای نمایش استاندارد ریاضی */
+        }
+
+        .fraction-input {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        input {
+            width: 45px;
+            height: 30px;
+            text-align: center;
+            font-size: 1.3rem;
+            border: 2px solid #00897b;
+            border-radius: 6px;
+            padding: 2px;
+            font-family: 'Vazirmatn';
+            font-weight: bold;
+        }
+
+        .line { width: 100%; height: 2px; background: #333; margin: 3px 0; }
+
+        button {
+            background: #00796b;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Vazirmatn';
+            transition: 0.2s;
+            font-weight: bold;
+        }
+        button:hover { transform: scale(1.05); background: #004d40; }
+
+        /* --- بوم نقاشی --- */
+        #canvas-wrapper {
+            position: relative;
+            /* حاشیه زیاد برای جا شدن لیبل‌ها */
+            margin: 100px 120px 80px 140px; 
+            direction: ltr; 
+        }
+
+        #main-rect {
+            position: relative;
+            box-shadow: 0 0 0 3px #000; 
+            background: white;
+        }
+
+        .sub-rect {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: visible; 
+            font-size: 1.4rem; /* فونت بزرگتر برای داخل مستطیل */
+            font-weight: bold;
+            z-index: 1;
+            /* خط چین خاکستری */
+            border-right: 2px dashed #777;  
+            border-bottom: 2px dashed #777;
+        }
+        
+        .last-col { border-right: none; }
+        .last-row { border-bottom: none; }
+
+        /* رنگ‌ها */
+        .c-yellow { background: #fff9c4; }
+        .c-purple { background: #e1bee7; }
+        .c-green  { background: #c8e6c9; }
+        .c-blue   { background: #b3e5fc; }
+
+        /* لیبل‌ها */
+        .label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            z-index: 10;
+            font-weight: bold;
+        }
+        .txt-black { color: #000; font-size: 1.4rem; }
+        .txt-red { color: #d32f2f; font-size: 1.8rem; } /* اعداد قرمز بزرگتر */
+
+        /* براکت‌ها */
+        .bracket {
+            position: absolute;
+            border: 3px solid #d32f2f; 
+            z-index: 5;
+        }
+        .bracket-h { border-bottom: none; height: 18px; }
+        .bracket-v { border-right: none; width: 18px; }
+
+        /* نتایج */
+        #results-area {
+            margin-top: 40px;
+            width: 95%;
+            max-width: 900px;
+            text-align: center;
+        }
+        .result-box {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 3px dashed #aaa;
+            margin-top: 10px;
+            font-size: 1.5rem;
+            direction: ltr;
+        }
+        h3 { color: #00695c; margin-bottom: 5px; text-align: right; direction: rtl; font-size: 1.3rem;}
+
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <div class="input-group">
+            <span>عمودی:</span>
+            <!-- جهت LTR برای نمایش استاندارد ریاضی -->
+            <div class="mixed-number-input">
+                <input type="number" id="w1" value="2">
+                <div class="fraction-input">
+                    <input type="number" id="n1" value="1">
+                    <div class="line"></div>
+                    <input type="number" id="d1" value="2">
+                </div>
+            </div>
+        </div>
+
+        <span style="font-size: 2.5rem; color:#555; margin: 0 15px;">×</span>
+
+        <div class="input-group">
+            <span>افقی:</span>
+            <div class="mixed-number-input">
+                <input type="number" id="w2" value="3">
+                <div class="fraction-input">
+                    <input type="number" id="n2" value="1">
+                    <div class="line"></div>
+                    <input type="number" id="d2" value="4">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="draw()">رسم شکل</button>
+    </div>
+
+    <!-- ناحیه رسم -->
+    <div id="canvas-wrapper">
+        <div id="main-rect"></div>
+    </div>
+
+    <!-- ناحیه نتایج -->
+    <div id="results-area">
+        <h3>جمع مساحت‌ها (روش توزیع‌پذیری):</h3>
+        <div id="res-sum" class="result-box">...</div>
+
+        <h3>ضرب کسر بزرگتر از واحد:</h3>
+        <div id="res-mul" class="result-box">...</div>
+    </div>
+
+    <script>
+        // توابع کمکی
+        const frac = (n, d) => d == 1 ? `${n}` : `\\frac{${n}}{${d}}`;
+        const gcd = (a, b) => b ? gcd(b, a % b) : a;
+        const simplify = (n, d) => {
+            const c = gcd(n, d);
+            return [n/c, d/c];
+        };
+
+        function draw() {
+            const wrapper = document.getElementById('canvas-wrapper');
+            const box = document.getElementById('main-rect');
+            
+            // پاکسازی
+            box.innerHTML = '';
+            wrapper.querySelectorAll('.label, .bracket').forEach(el => el.remove());
+
+            // ورودی‌ها
+            const w1 = +document.getElementById('w1').value; 
+            const n1 = +document.getElementById('n1').value;
+            const d1 = +document.getElementById('d1').value;
+            
+            const w2 = +document.getElementById('w2').value; 
+            const n2 = +document.getElementById('n2').value;
+            const d2 = +document.getElementById('d2').value;
+
+            // --- تغییر مقیاس برای بزرگتر شدن شکل ---
+            const SCALE = 220; // افزایش از 150 به 220
+            
+            // محاسبه ابعاد
+            const H_int = w1 * SCALE;      
+            const H_frac = (n1/d1) * SCALE; 
+            const H_total = H_int + H_frac;
+
+            const W_int = w2 * SCALE;      
+            const W_frac = (n2/d2) * SCALE; 
+            const W_total = W_int + W_frac;
+
+            // اعمال ابعاد به باکس اصلی
+            box.style.width = W_total + 'px';
+            box.style.height = H_total + 'px';
+
+            // --- رسم مستطیل‌های داخلی ---
+            // فرمول‌ها به صورت لاتک داخل هر خونه
+            // 1. بالا چپ (زرد)
+            createRect(box, 0, 0, W_int, H_int, 'c-yellow', `${w1} \\times ${w2}`);
+            
+            // 2. بالا راست (بنفش)
+            createRect(box, W_int, 0, W_frac, H_int, 'c-purple last-col', `${w1} \\times ${frac(n2,d2)}`);
+            
+            // 3. پایین چپ (سبز)
+            createRect(box, 0, H_int, W_int, H_frac, 'c-green last-row', `${frac(n1,d1)} \\times ${w2}`);
+            
+            // 4. پایین راست (آبی)
+            createRect(box, W_int, H_int, W_frac, H_frac, 'c-blue last-col last-row', `${frac(n1,d1)} \\times ${frac(n2,d2)}`);
+
+
+            // --- رسم لیبل‌های بیرون ---
+            const PAD_TXT = 40; // فاصله متن سیاه
+            const PAD_BRA = 65; // فاصله براکت
+            const PAD_RED = 105; // فاصله عدد قرمز
+
+            // محور افقی (بالا)
+            createLabel(wrapper, W_int/2, -PAD_TXT, `$$${w2}$$`, 'txt-black');
+            createLabel(wrapper, W_int + W_frac/2, -PAD_TXT, `$$${frac(n2,d2)}$$`, 'txt-black');
+            
+            const brTop = document.createElement('div');
+            brTop.className = 'bracket bracket-h';
+            brTop.style.top = -PAD_BRA + 'px';
+            brTop.style.left = '0px';
+            brTop.style.width = W_total + 'px';
+            wrapper.appendChild(brTop);
+
+            const impTop = w2*d2 + n2;
+            createLabel(wrapper, W_total/2, -PAD_RED, `$$\\mathbf{\\frac{${impTop}}{${d2}}}$$`, 'txt-red');
+
+
+            // محور عمودی (چپ)
+            createLabel(wrapper, -PAD_TXT, H_int/2, `$$${w1}$$`, 'txt-black');
+            createLabel(wrapper, -PAD_TXT, H_int + H_frac/2, `$$${frac(n1,d1)}$$`, 'txt-black');
+
+            const brLeft = document.createElement('div');
+            brLeft.className = 'bracket bracket-v';
+            brLeft.style.left = -PAD_BRA + 'px';
+            brLeft.style.top = '0px';
+            brLeft.style.height = H_total + 'px';
+            wrapper.appendChild(brLeft);
+
+            const impLeft = w1*d1 + n1;
+            createLabel(wrapper, -PAD_RED, H_total/2, `$$\\mathbf{\\frac{${impLeft}}{${d1}}}$$`, 'txt-red');
+
+            
+            // --- محاسبات ---
+            const p1 = w1 * w2;
+            const p2_n = w1 * n2; const p2_d = d2;
+            const p3_n = n1 * w2; const p3_d = d1;
+            const p4_n = n1 * n2; const p4_d = d1 * d2;
+            
+            const s2 = simplify(p2_n, p2_d);
+            const s3 = simplify(p3_n, p3_d);
+            const s4 = simplify(p4_n, p4_d);
+
+            const finalN = impLeft * impTop;
+            const finalD = d1 * d2;
+            const finalS = simplify(finalN, finalD);
+
+            const sumHTML = `$$ ${p1} + ${frac(s2[0],s2[1])} + ${frac(s3[0],s3[1])} + ${frac(s4[0],s4[1])} = \\mathbf{${frac(finalS[0], finalS[1])}} $$`;
+            const mulHTML = `$$ \\frac{${impLeft}}{${d1}} \\times \\frac{${impTop}}{${d2}} = \\frac{${finalN}}{${finalD}} = \\mathbf{${frac(finalS[0], finalS[1])}} $$`;
+
+            document.getElementById('res-sum').innerHTML = sumHTML;
+            document.getElementById('res-mul').innerHTML = mulHTML;
+
+            MathJax.typesetPromise();
+        }
+
+        function createRect(parent, x, y, w, h, cls, text) {
+            const div = document.createElement('div');
+            div.className = `sub-rect ${cls}`;
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            div.style.width = w + 'px';
+            div.style.height = h + 'px';
+            div.innerHTML = `$$${text}$$`;
+            parent.appendChild(div);
+        }
+
+        function createLabel(parent, x, y, html, cls) {
+            const div = document.createElement('div');
+            div.className = `label ${cls}`;
+            div.style.left = x + 'px';
+            div.style.top = y + 'px';
+            div.innerHTML = html;
+            parent.appendChild(div);
+        }
+
+        window.onload = draw;
+    </script>
+</body>
+</html>
