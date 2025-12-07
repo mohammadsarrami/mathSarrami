@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>بازی کسر معکوس</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600&display=swap');
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Scoreboard */
+        .score-board {
+            background: linear-gradient(to left, #2c3e50, #3498db);
+            color: white;
+            padding: 12px 40px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            font-size: 1.3rem;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        #scoreVal { font-weight: 900; font-family: 'Fredoka', sans-serif; color: #f1c40f; }
+
+        /* Main Card */
+        .game-card {
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            width: 95%;
+            max-width: 950px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: auto;
+        }
+
+        /* Input Section */
+        .input-row {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            flex-direction: row-reverse; 
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .label-text {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        /* Math Inputs Styling */
+        .fraction-input-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            direction: ltr;
+            background: #f1f2f6;
+            padding: 15px;
+            border-radius: 20px;
+            border: 2px solid #dfe4ea;
+        }
+
+        input {
+            width: 55px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.6rem;
+            border: 2px solid #bdc3c7;
+            border-radius: 12px;
+            font-family: 'Fredoka', sans-serif;
+            outline: none;
+            transition: 0.2s;
+            background: #fff;
+        }
+        input:focus { border-color: #3498db; }
+        #qWhole { margin-right: 5px; } 
+
+        .frac-stack { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+        .frac-bar { width: 100%; height: 3px; background: #2c3e50; border-radius: 2px; }
+
+        /* Buttons */
+        button {
+            padding: 12px 40px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Vazirmatn';
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.1s;
+        }
+        button:active { transform: scale(0.96); }
+
+        #btnCheck { background: #27ae60; }
+        #btnNext { background: #2980b9; margin-top: 15px; display: none; }
+
+        /* ANALYSIS SECTION */
+        .analysis-area {
+            width: 100%;
+            margin-top: 25px;
+            border-top: 2px dashed #dfe6e9;
+            padding-top: 25px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* 1. Logic Row */
+        .transform-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            direction: ltr;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.8rem;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .fraction-view {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            color: #2c3e50;
+            vertical-align: middle;
+        }
+        .mixed-view {
+            display: inline-flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 10px;
+        }
+        .whole-view {
+            font-size: 2.2rem;
+            font-weight: 900;
+            line-height: 1;
+            padding-bottom: 4px;
+        }
+        .num-view { border-bottom: 3px solid #2c3e50; padding: 0 5px; display: block; width: 100%; text-align: center; }
+        .den-view { padding: 0 5px; display: block; width: 100%; text-align: center; }
+
+        /* Arrow (Simple) */
+        .arrow-complex {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 15px;
+        }
+        .arrow-top-text { font-size: 1rem; font-family: 'Vazirmatn'; color: #e67e22; font-weight: bold; margin-bottom: -8px; }
+        .arrow-symbol { font-size: 2.5rem; color: #7f8c8d; font-weight: bold; }
+
+        /* 2. Equivalents Logic Box */
+        .equiv-box {
+            background-color: #ecf0f1;
+            padding: 15px 25px;
+            border-radius: 12px;
+            text-align: center;
+            width: 90%;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            border-right: 5px solid #3498db;
+        }
+        .equiv-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            display: block;
+            color: #2980b9;
+            margin-bottom: 10px;
+        }
+        .math-expansion {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            direction: ltr;
+            font-family: 'Fredoka';
+            font-size: 1.4rem;
+            margin-top: 5px;
+        }
+        .multiplication-step {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+        
+        /* 3. Proof Box */
+        .proof-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            direction: ltr;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 900;
+            padding: 15px 30px;
+            background: #fffdf0;
+            border: 3px solid #f1c40f;
+            border-radius: 20px;
+        }
+
+        .strike-red { position: relative; color: #bdc3c7; }
+        .strike-red::after {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 120%; height: 4px; background-color: #e74c3c;
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+        .strike-blue { position: relative; color: #bdc3c7; }
+        .strike-blue::after {
+            content: ''; position: absolute; top: 50%; left: 50%;
+            width: 120%; height: 4px; background-color: #3498db;
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
+
+        .golden-box {
+            width: 60px; height: 60px;
+            background: #f1c40f;
+            color: white;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 0 15px #f1c40f;
+        }
+
+        .footer { margin-top: 20px; font-weight: bold; color: #95a5a6; font-size: 0.9rem; }
+        #msgBox { min-height: 40px; margin: 10px 0; text-align: center; }
+
+    </style>
+</head>
+<body>
+
+    <div class="score-board">
+        <span>امتیاز شما:</span>
+        <span id="scoreVal">0</span>
+    </div>
+
+    <div class="game-card">
+        
+        <div class="input-row">
+            <div class="input-group">
+                <span class="label-text">کسر</span>
+                <div class="fraction-input-container">
+                    <input type="number" id="qWhole" placeholder="W">
+                    <div class="frac-stack">
+                        <input type="number" id="qNum" placeholder="N">
+                        <div class="frac-bar"></div>
+                        <input type="number" id="qDen" placeholder="D">
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <span class="label-text">کسر معکوس</span>
+                <div class="fraction-input-container">
+                    <div class="frac-stack">
+                        <input type="number" id="aNum" placeholder="N">
+                        <div class="frac-bar"></div>
+                        <input type="number" id="aDen" placeholder="D">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button id="btnCheck" onclick="runAnalysis()">✅ بررسی پاسخ</button>
+        
+        <div id="msgBox"></div>
+
+        <div id="analysisArea" class="analysis-area">
+            <!-- Row 1: Logic -->
+            <div id="logicRow" class="transform-row"></div>
+            <!-- Row 2: Text & Math Explanation -->
+            <div id="textRow" class="equiv-box"></div>
+            <!-- Row 3: Proof -->
+            <div id="proofRow" class="proof-container"></div>
+        </div>
+
+        <button id="btnNext" onclick="resetGame()">سوال جدید 🔄</button>
+
+    </div>
+
+    <div class="footer">برنامه نویس : آقای صرامی</div>
+
+    <script>
+        let score = 0;
+
+        function htmlFrac(n, d, w=0, cN="", cD="") {
+            if (w != 0) {
+                return `<div class="mixed-view">
+                            <span class="whole-view">${w}</span>
+                            <div class="fraction-view">
+                                <span class="num-view ${cN}">${n}</span>
+                                <span class="den-view ${cD}">${d}</span>
+                            </div>
+                        </div>`;
+            } else {
+                return `<div class="fraction-view">
+                            <span class="num-view ${cN}">${n}</span>
+                            <span class="den-view ${cD}">${d}</span>
+                        </div>`;
+            }
+        }
+
+        // تابع کمکی برای نمایش ضرب در صورت و مخرج به شکل (N x 2)
+        function htmlExpansionFrac(n, d, mul) {
+            return `<div class="fraction-view">
+                        <span class="num-view">${n} &times; ${mul}</span>
+                        <span class="den-view">${d} &times; ${mul}</span>
+                    </div>`;
+        }
+
+        function htmlArrow() {
+            return `
+            <div class="arrow-complex">
+                <span class="arrow-top-text">معکوس</span>
+                <span class="arrow-symbol">&rarr;</span>
+            </div>`;
+        }
+
+        function runAnalysis() {
+            const msg = document.getElementById('msgBox');
+            
+            let qN = document.getElementById('qNum').value;
+            let qD = document.getElementById('qDen').value;
+            let aN = document.getElementById('aNum').value;
+            let aD = document.getElementById('aDen').value;
+
+            if(qN === "" || qD === "" || aN === "" || aD === "") {
+                msg.innerHTML = "<span style='color:#e67e22; font-weight:bold; font-size:1.1rem;'>⚠️ اول کسر (یا عدد مخلوط) و کسر معکوس را بنویس، سپس بررسی کن.</span>";
+                return;
+            }
+
+            let qW = parseInt(document.getElementById('qWhole').value) || 0;
+            qN = parseInt(qN);
+            qD = parseInt(qD);
+            aN = parseInt(aN);
+            aD = parseInt(aD);
+
+            if(qD === 0 || aD === 0) {
+                 msg.innerHTML = "<span style='color:#c0392b;'>مخرج کسر نمی‌تواند صفر باشد!</span>";
+                 return;
+            }
+
+            let impN = (qW * qD) + qN; 
+            let impD = qD;
+            
+            // Check correctness
+            let isCorrect = (aN * impN) === (aD * impD);
+
+            if(isCorrect) {
+                score += 3;
+                msg.innerHTML = "<h2 style='color:#27ae60; margin:0;'>آفرین! صحیح است 👏</h2>";
+            } else {
+                score -= 1;
+                msg.innerHTML = "<h2 style='color:#c0392b; margin:0;'>اشتباه بود! ۱ امتیاز کسر شد 💥</h2>";
+            }
+            document.getElementById('scoreVal').innerText = score;
+
+            // --- 1. Main Visual Logic (تبدیل و معکوس ساده) ---
+            let logicHTML = "";
+            logicHTML += htmlFrac(qN, qD, qW);
+
+            if(qW !== 0) {
+                logicHTML += `<span style="color:#f39c12; margin:0 15px;">&rarr;</span>`;
+                logicHTML += htmlFrac(impN, impD);
+            }
+
+            logicHTML += htmlArrow();
+            
+            let recN = impD; 
+            let recD = impN;
+            logicHTML += htmlFrac(recN, recD);
+
+            document.getElementById('logicRow').innerHTML = logicHTML;
+
+            // --- 2. Equivalents Explanation (ساخت کسر مساوی) ---
+            let mul = 2; // عددی که در صورت و مخرج ضرب می‌شود
+            let eqRecN = recN * mul;
+            let eqRecD = recD * mul;
+            
+            // Result of Original x Equivalent Reciprocal for checking
+            let bigN = impN * eqRecN;
+            let bigD = impD * eqRecD;
+
+            let textHTML = `
+                <span class="equiv-title">ساخت کسر مساوی با معکوس:</span>
+                <div class="math-expansion" style="margin-bottom: 20px;">
+                    <!-- Reciprocal Base -->
+                    ${htmlFrac(recN, recD)}
+                    <span>=</span>
+                    
+                    <!-- Expansion Step (Showing Multiplication) -->
+                    ${htmlExpansionFrac(recN, recD, mul)}
+                    
+                    <span>=</span>
+                    
+                    <!-- Result -->
+                    <div style="background:#e8f8f5; padding:5px; border-radius:8px; border:1px dashed #1abc9c">
+                       ${htmlFrac(eqRecN, eqRecD)}
+                    </div>
+                </div>
+
+                <p style="margin:5px 0 10px 0; font-size:0.95rem; color:#34495e;">
+                    آیا این کسر هم جواب است؟ بله، چون ضرب آن در کسر اول برابر یک می‌شود:
+                </p>
+                
+                <div class="math-expansion">
+                    <!-- Original Fraction -->
+                    ${htmlFrac(impN, impD)} 
+                    <span style="color:#7f8c8d">&times;</span>
+                    <!-- Equivalent Reciprocal -->
+                    <div style="background:#e8f8f5; padding:5px; border-radius:8px; border:1px dashed #1abc9c">
+                       ${htmlFrac(eqRecN, eqRecD)}
+                    </div>
+                    <span>=</span>
+                    ${htmlFrac(bigN, bigD)}
+                    <span>=</span>
+                    <span style="color:#f1c40f; font-size:1.8rem; font-weight:900">1</span>
+                </div>
+            `;
+            document.getElementById('textRow').innerHTML = textHTML;
+
+            // --- 3. Main Proof (Simplification) ---
+            let proofHTML = "";
+            proofHTML += htmlFrac(impN, impD, 0, "strike-red", "strike-blue");
+            proofHTML += `<span style="color:#95a5a6; font-size:2rem; margin:0 10px;">&times;</span>`;
+            proofHTML += htmlFrac(impD, impN, 0, "strike-blue", "strike-red");
+            proofHTML += `<span style="color:#95a5a6; font-size:2rem; margin:0 10px;">=</span>`;
+            proofHTML += `<div class="golden-box">1</div>`;
+            document.getElementById('proofRow').innerHTML = proofHTML;
+
+            document.getElementById('analysisArea').style.display = 'flex';
+            document.getElementById('btnCheck').style.display = 'none';
+            document.getElementById('btnNext').style.display = 'inline-block';
+        }
+
+        function resetGame() {
+            document.getElementById('qWhole').value = '';
+            document.getElementById('qNum').value = '';
+            document.getElementById('qDen').value = '';
+            document.getElementById('aNum').value = '';
+            document.getElementById('aDen').value = '';
+            
+            document.getElementById('msgBox').innerHTML = '';
+            document.getElementById('analysisArea').style.display = 'none';
+            document.getElementById('btnCheck').style.display = 'inline-block';
+            document.getElementById('btnNext').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
