@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماشین تناسب - با فلش جادویی دقیق</title>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --accent: #27ae60;      
+            --wrong: #c0392b;       
+            --guide-color: #2980b9; 
+            --target-color: #8e44ad;
+            --bg-color: #f0f3f5;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 100px;
+            user-select: none;
+        }
+
+        .header-panel {
+            width: 100%; max-width: 800px; padding: 20px;
+            display: flex; justify-content: center;
+        }
+        
+        #scoreBoard {
+            background: #f39c12; color: white;
+            padding: 10px 30px; border-radius: 50px;
+            font-size: 1.5rem; font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+
+        #mainPanel {
+            background: white;
+            width: 90%; max-width: 800px;
+            margin-top: 20px;
+            padding: 40px 20px;
+            border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+
+        /* کانتینر اصلی کسرها */
+        .fraction-display {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 150px; /* فاصله بیشتر برای دیده شدن بهتر فلش */
+            font-size: 3rem;
+            margin: 80px 0; 
+            color: var(--primary);
+            direction: ltr; 
+            position: relative; 
+            z-index: 1;
+        }
+
+        .frac-group {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 15px; width: 100px; z-index: 2; position: relative;
+        }
+
+        .frac-line {
+            width: 100%; height: 6px; background-color: var(--primary); border-radius: 10px;
+        }
+
+        .num-box {
+            width: 110px; height: 80px; 
+            display: flex; align-items: center; justify-content: center;
+            background: #fff;
+            border: 3px solid #ecf0f1;
+            border-radius: 15px;
+            font-weight: bold;
+            position: relative;
+            z-index: 2; 
+            transition: all 0.3s;
+        }
+        
+        .highlight-guide { 
+            background-color: #ebf5fb; border-color: var(--guide-color); 
+            color: var(--guide-color); 
+            box-shadow: 0 0 20px rgba(41, 128, 185, 0.4);
+            transform: scale(1.1);
+            z-index: 10;
+        }
+        .highlight-target { 
+            background-color: #f4ecf7; border-color: var(--target-color); 
+            color: var(--target-color); 
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .input-main {
+            width: 100%; height: 100%; font-size: 2.5rem; text-align: center;
+            border: none; background: transparent; color: inherit; font-family: inherit; font-weight: bold;
+        }
+        .input-main:focus { outline: none; background: #fafafa; }
+        .input-main:disabled { background: #f8f9f9; color: #95a5a6; }
+        .input-main.correct { background: #eafaf1; color: var(--accent); }
+        .input-main.wrong { background: #fdedec; color: var(--wrong); }
+
+        /* --- تنظیمات SVG --- */
+        .svg-layer {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 5; /* بالاتر از خط کسر اما پایین تر از باکس اعداد */
+            overflow: visible; 
+        }
+        
+        /* استایل فلش‌ها */
+        path.arrow-path {
+            fill: none; 
+            stroke-width: 5; 
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0px 3px 3px rgba(0,0,0,0.2)); /* سایه برای برجستگی */
+        }
+        
+        /* انیمیشن رسم خط */
+        .draw-anim {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 1.5s ease-out forwards;
+        }
+        
+        @keyframes draw {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .arrow-dashed { stroke-dasharray: 15, 10; animation: none; /* دش ساده بدون انیمیشن رسم */ }
+        
+        /* --- باکس سبز ورودی ضریب --- */
+        .factor-box {
+            position: absolute; 
+            background: white;
+            border: 3px solid var(--accent);
+            border-radius: 15px;
+            padding: 8px 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: none; 
+            flex-direction: row; align-items: center; gap: 8px;
+            z-index: 100; 
+            transform: translate(-50%, -50%); 
+        }
+        
+        .factor-label { font-size: 0.9rem; color: #7f8c8d; font-weight: bold; }
+        
+        .factor-inputs-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        
+        .f-input {
+            width: 50px; height: 35px; 
+            border: 2px solid #bdc3c7; 
+            text-align: center; font-size: 1.2rem; 
+            border-radius: 8px; color: var(--primary); font-weight: bold;
+        }
+        .f-input:focus { border-color: var(--accent); outline: none; }
+        
+        .f-line { width: 40px; height: 3px; background: var(--primary); border-radius: 2px; }
+        
+        .btn-mini-check {
+            background: var(--accent); color: white; border: none;
+            width: 32px; height: 32px; border-radius: 50%;
+            font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: transform 0.2s;
+        }
+        .btn-mini-check:hover { transform: scale(1.1); }
+
+        .check-main-btn {
+            background: var(--guide-color); color: white; border: none; padding: 12px 40px;
+            border-radius: 50px; font-size: 1.3rem; cursor: pointer; margin-top: 40px;
+            box-shadow: 0 5px 15px rgba(41, 128, 185, 0.3);
+            transition: transform 0.2s;
+        }
+        .check-main-btn:active { transform: scale(0.95); }
+
+        .next-btn {
+            background: #34495e; color: white; border: none; padding: 15px 40px;
+            border-radius: 50px; font-size: 1.5rem; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); margin-top: 40px; display: none;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .feedback { font-size: 1.3rem; margin-top: 20px; min-height: 35px; font-weight: bold; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-panel">
+        <div id="scoreBoard">امتیاز: 0</div>
+    </div>
+
+    <div id="mainPanel">
+        <h2 style="color: #95a5a6; margin:0 0 20px 0; font-size: 1.1rem;">جای خالی را پر کنید (ماشین تناسب)</h2>
+        
+        <div class="fraction-display" id="quizContainer">
+            <!-- لایه SVG برای فلش‌ها -->
+            <svg class="svg-layer" id="arrowSvg">
+                <defs>
+                    <!-- تعریف سر فلش‌ها -->
+                    <marker id="arrowhead-guide" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <path d="M0,0 L6,3 L0,6" fill="#2980b9" />
+                    </marker>
+                    <marker id="arrowhead-target" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+                        <path d="M0,0 L6,3 L0,6" fill="#8e44ad" />
+                    </marker>
+                </defs>
+            </svg>
+
+            <!-- باکس‌های ورودی ضریب -->
+            <div id="factorBox1" class="factor-box">
+                <span class="factor-label">ضرب</span>
+                <div class="factor-inputs-col">
+                    <input type="number" id="fb1_num" class="f-input" autocomplete="off">
+                    <div class="f-line"></div>
+                    <input type="number" id="fb1_den" class="f-input" autocomplete="off">
+                </div>
+                <button class="btn-mini-check" onclick="checkFactor(1)">✔</button>
+            </div>
+
+            <div id="factorBox2" class="factor-box">
+                <span class="factor-label">ضرب</span>
+                <div class="factor-inputs-col">
+                    <input type="number" id="fb2_num" class="f-input" autocomplete="off">
+                    <div class="f-line"></div>
+                    <input type="number" id="fb2_den" class="f-input" autocomplete="off">
+                </div>
+                <button class="btn-mini-check" onclick="checkFactor(2)">✔</button>
+            </div>
+
+            <!-- کسرها توسط جاوااسکریپت در اینجا ساخته می‌شوند -->
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+        <button class="check-main-btn" id="mainCheckBtn" onclick="checkMainAnswer()">بررسی پاسخ</button>
+        <button class="next-btn" id="nextBtn" onclick="generateProblem()">سوال بعدی 🎲</button>
+    </div>
+
+    <script>
+        let score = 0;
+        let currentProblem = {};
+        let problemHistory = [];
+        let step = 0; // 0: Main, 1: Guide, 2: Target, 3: Retry
+        let layoutInfo = {};
+        let initialAttemptCorrect = false;
+
+        function generateProblem() {
+            // ریست کردن همه چیز
+            document.getElementById('feedback').innerText = '';
+            document.getElementById('mainCheckBtn').style.display = 'inline-block';
+            document.getElementById('mainCheckBtn').innerText = 'بررسی پاسخ';
+            document.getElementById('nextBtn').style.display = 'none';
+            document.getElementById('factorBox1').style.display = 'none';
+            document.getElementById('factorBox2').style.display = 'none';
+            
+            // پاک کردن مسیرهای SVG قبلی (به جز Defs)
+            const svg = document.getElementById('arrowSvg');
+            const paths = svg.querySelectorAll('path.arrow-path');
+            paths.forEach(p => p.remove());
+
+            // ریست ورودی‌ها
+            ['fb1_num', 'fb1_den', 'fb2_num', 'fb2_den'].forEach(id => {
+                const el = document.getElementById(id);
+                el.value = ''; el.disabled = false; el.style.borderColor = '#bdc3c7';
+            });
+            document.querySelectorAll('.btn-mini-check').forEach(b => b.style.display = 'flex');
+
+            step = 0;
+            initialAttemptCorrect = false;
+
+            // تولید اعداد تصادفی (تضمین یکتایی)
+            let uniqueFound = false;
+            let nums = [];
+
+            while (!uniqueFound) {
+                const denoms = [2, 3, 4, 5];
+                const q = denoms[Math.floor(Math.random() * denoms.length)]; 
+                let p;
+                do { p = Math.floor(Math.random() * 5) + 2; } while (p === q || (p % q === 0));
+
+                let seed1 = Math.floor(Math.random() * 5) + 2;
+                let seed2 = seed1 + (Math.floor(Math.random() * 3) + 1);
+
+                // N1/D1 = N2/D2
+                let N1 = seed1 * q; 
+                let D1 = seed2 * q;
+                let N2 = seed1 * p;
+                let D2 = seed2 * p;
+
+                // تصادفی کردن جای کسرها
+                if(Math.random() > 0.5) { [N1, N2] = [N2, N1]; [D1, D2] = [D2, D1]; }
+
+                nums = [N1, D1, N2, D2];
+                const hash = nums.join('-');
+                
+                if (!problemHistory.includes(hash)) {
+                    problemHistory.push(hash);
+                    if (problemHistory.length > 20) problemHistory.shift();
+                    uniqueFound = true;
+                }
+            }
+
+            const uIdx = Math.floor(Math.random() * 4); // اندیس مجهول
+            currentProblem = { vals: nums, uIdx: uIdx, ans: nums[uIdx] };
+            
+            renderQuiz();
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quizContainer');
+            // پاک کردن کسرهای قبلی
+            const oldGroups = container.querySelectorAll('.frac-group, .equals-sign');
+            oldGroups.forEach(el => el.remove());
+
+            const vals = currentProblem.vals;
+            const uIdx = currentProblem.uIdx;
+
+            // ساخت کسر اول (اندیس 0 و 1)
+            const group1 = createFracGroup(vals[0], vals[1], uIdx, 0, 1);
+            
+            const eq = document.createElement('div'); 
+            eq.className = 'equals-sign';
+            eq.innerHTML = '='; 
+            eq.style.fontSize='3rem'; eq.style.margin = '0 10px';
+
+            // ساخت کسر دوم (اندیس 2 و 3)
+            const group2 = createFracGroup(vals[2], vals[3], uIdx, 2, 3);
+
+            container.appendChild(group1);
+            container.appendChild(eq);
+            container.appendChild(group2);
+        }
+
+        function createFracGroup(nVal, dVal, uIdx, nId, dId) {
+            const div = document.createElement('div');
+            div.className = 'frac-group';
+            
+            const nBox = document.createElement('div'); nBox.className = 'num-box'; nBox.id = `box_${nId}`;
+            if (uIdx === nId) nBox.innerHTML = `<input id="mainInput" class="input-main" type="number" placeholder="؟" autocomplete="off">`;
+            else nBox.innerText = nVal;
+
+            const line = document.createElement('div'); line.className = 'frac-line';
+
+            const dBox = document.createElement('div'); dBox.className = 'num-box'; dBox.id = `box_${dId}`;
+            if (uIdx === dId) dBox.innerHTML = `<input id="mainInput" class="input-main" type="number" placeholder="؟" autocomplete="off">`;
+            else dBox.innerText = dVal;
+
+            div.appendChild(nBox);
+            div.appendChild(line);
+            div.appendChild(dBox);
+            return div;
+        }
+
+        function checkMainAnswer() {
+            if (step === 3) {
+                finalizeAnswer();
+                return;
+            }
+            if (step > 0) return; 
+
+            const input = document.getElementById('mainInput');
+            const val = parseInt(input.value);
+            const feedback = document.getElementById('feedback');
+
+            if (isNaN(val)) {
+                feedback.innerText = "لطفا عدد را وارد کنید.";
+                return;
+            }
+
+            if (val === currentProblem.ans) {
+                input.classList.add('correct');
+                input.disabled = true;
+                initialAttemptCorrect = true;
+                score += 2; 
+                document.getElementById('scoreBoard').innerText = `امتیاز: ${score}`;
+                feedback.innerHTML = "آفرین! حالا مسیر ضرب را کامل کن.";
+                feedback.style.color = "var(--accent)";
+            } else {
+                input.classList.add('wrong');
+                feedback.innerText = "اشتباه نوشتی. حالا ببینیم ضربش چطور میشه.";
+                feedback.style.color = "var(--wrong)";
+                score = Math.max(0, score - 1);
+                document.getElementById('scoreBoard').innerText = `امتیاز: ${score}`;
+                
+                setTimeout(() => {
+                    input.value = '';
+                    input.classList.remove('wrong');
+                    input.disabled = true; 
+                }, 1000);
+            }
+
+            document.getElementById('mainCheckBtn').style.display = 'none';
+            step = 1;
+            // کمی تاخیر برای لود کامل DOM اگر تغییری بوده باشد
+            setTimeout(initTeachingFlow, 500);
+        }
+
+        function initTeachingFlow() {
+            const p = currentProblem;
+            // تعیین جهت فلش (چپ به راست یا راست به چپ)
+            // قانون: فلش همیشه از طرف "معلوم" به سمت "مجهول" می‌رود تا دانش‌آموز بفهمد چه بلایی سر عدد آمده
+            // اگر مجهول سمت راست است (اندیس 2 یا 3)، فلش‌ها چپ به راست (0->2 و 1->3) هستند.
+            // اگر مجهول سمت چپ است (اندیس 0 یا 1)، فلش‌ها راست به چپ (2->0 و 3->1) هستند.
+            
+            const isUnknownRight = (p.uIdx === 2 || p.uIdx === 3);
+            
+            // سطر راهنما: سطری که هر دو عددش معلوم است
+            // اگر مجهول اندیس 0 (صورت چپ) باشد، سطر راهنما پایین است.
+            // اگر مجهول اندیس 1 (مخرج چپ) باشد، سطر راهنما بالا است.
+            // اگر مجهول اندیس 2 (صورت راست) باشد، سطر راهنما پایین است.
+            // اگر مجهول اندیس 3 (مخرج راست) باشد، سطر راهنما بالا است.
+            const isTopRowUnknown = (p.uIdx === 0 || p.uIdx === 2);
+            const guideRow = isTopRowUnknown ? 'bottom' : 'top'; // اگر بالا مجهول دارد، پایین راهنماست
+
+            // تعیین اندیس‌های شروع و پایان
+            // Top Row Indices: 0 and 2
+            // Bottom Row Indices: 1 and 3
+            
+            let startIdxTop, endIdxTop, startIdxBot, endIdxBot;
+
+            if (isUnknownRight) {
+                // فلش چپ به راست
+                startIdxTop = 0; endIdxTop = 2;
+                startIdxBot = 1; endIdxBot = 3;
+            } else {
+                // فلش راست به چپ
+                startIdxTop = 2; endIdxTop = 0;
+                startIdxBot = 3; endIdxBot = 1;
+            }
+
+            layoutInfo = {
+                guideRow: guideRow,
+                startIdxTop: startIdxTop,
+                endIdxTop: endIdxTop,
+                startIdxBot: startIdxBot,
+                endIdxBot: endIdxBot
+            };
+
+            showGuideArrow();
+        }
+
+        function showGuideArrow() {
+            const info = layoutInfo;
+            // انتخاب اندیس‌های سطر راهنما
+            const start = info.guideRow === 'top' ? info.startIdxTop : info.startIdxBot;
+            const end = info.guideRow === 'top' ? info.endIdxTop : info.endIdxBot;
+            
+            // رسم فلش
+            drawArrow(start, end, 'var(--guide-color)', 'url(#arrowhead-guide)', 'guidePath', info.guideRow);
+            
+            // هایلایت کردن باکس‌ها
+            document.getElementById(`box_${start}`).classList.add('highlight-guide');
+            document.getElementById(`box_${end}`).classList.add('highlight-guide');
+
+            // نمایش باکس ورودی روی فلش
+            showFactorBox('factorBox1', start, end, info.guideRow);
+        }
+
+        function showTargetArrow() {
+            const info = layoutInfo;
+            // انتخاب اندیس‌های سطر هدف (که مجهول دارد)
+            const start = info.guideRow === 'top' ? info.startIdxBot : info.startIdxTop;
+            const end = info.guideRow === 'top' ? info.endIdxBot : info.endIdxTop;
+
+            drawArrow(start, end, 'var(--target-color)', 'url(#arrowhead-target)', 'targetPath', info.guideRow === 'top' ? 'bottom' : 'top');
+
+            document.getElementById(`box_${start}`).classList.add('highlight-target');
+            document.getElementById(`box_${end}`).classList.add('highlight-target');
+
+            showFactorBox('factorBox2', start, end, info.guideRow === 'top' ? 'bottom' : 'top');
+        }
+
+        function drawArrow(fromId, toId, color, marker, pathId, rowType) {
+            const svg = document.getElementById('arrowSvg');
+            const container = document.getElementById('quizContainer');
+            
+            const fromEl = document.getElementById(`box_${fromId}`);
+            const toEl = document.getElementById(`box_${toId}`);
+            
+            // ** اصلاح حیاتی: محاسبه مختصات نسبت به کانتینر اصلی **
+            const cRect = container.getBoundingClientRect();
+            const fRect = fromEl.getBoundingClientRect();
+            const tRect = toEl.getBoundingClientRect();
+
+            const p1 = {
+                x: fRect.left - cRect.left + fRect.width / 2,
+                y: fRect.top - cRect.top + fRect.height / 2
+            };
+            const p2 = {
+                x: tRect.left - cRect.left + tRect.width / 2,
+                y: tRect.top - cRect.top + tRect.height / 2
+            };
+
+            // تعیین جهت انحنا: سطر بالا به سمت بالا خم می‌شود، سطر پایین به سمت پایین
+            const isTop = (rowType === 'top');
+            const curvature = isTop ? -90 : 90; // مقدار خمیدگی
+            
+            const midX = (p1.x + p2.x) / 2;
+            const midY = (p1.y + p2.y) / 2 + curvature;
+
+            const d = `M ${p1.x} ${p1.y} Q ${midX} ${midY} ${p2.x} ${p2.y}`;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", d);
+            path.setAttribute("class", "arrow-path draw-anim"); // اضافه کردن کلاس انیمیشن
+            path.setAttribute("id", pathId);
+            path.style.stroke = color;
+            path.setAttribute("marker-end", marker);
+
+            svg.appendChild(path);
+        }
+
+        function showFactorBox(boxId, fromId, toId, rowType) {
+            const box = document.getElementById(boxId);
+            const container = document.getElementById('quizContainer');
+            
+            const fromEl = document.getElementById(`box_${fromId}`);
+            const toEl = document.getElementById(`box_${toId}`);
+            
+            // محاسبه مجدد برای باکس
+            const cRect = container.getBoundingClientRect();
+            const fRect = fromEl.getBoundingClientRect();
+            const tRect = toEl.getBoundingClientRect();
+
+            const x1 = fRect.left - cRect.left + fRect.width / 2;
+            const y1 = fRect.top - cRect.top + fRect.height / 2;
+            const x2 = tRect.left - cRect.left + tRect.width / 2;
+            const y2 = tRect.top - cRect.top + tRect.height / 2;
+
+            const isTop = (rowType === 'top');
+            const curvature = isTop ? -90 : 90;
+            
+            // نقطه اوج منحنی (قله)
+            const controlX = (x1 + x2) / 2;
+            const controlY = (y1 + y2) / 2 + curvature;
+
+            // محاسبه نقطه روی منحنی (t=0.5) - فرمول Bezier درجه 2
+            // B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2
+            // برای t=0.5: 0.25*P0 + 0.5*P1 + 0.25*P2
+            const midX = 0.25*x1 + 0.5*controlX + 0.25*x2;
+            const midY = 0.25*y1 + 0.5*controlY + 0.25*y2;
+
+            box.style.left = `${midX}px`;
+            box.style.top = `${midY}px`;
+            box.style.display = 'flex';
+            
+            // فوکوس روی ورودی
+            setTimeout(() => { box.querySelector('input').focus(); }, 200);
+        }
+
+        function checkFactor(boxNum) {
+            const p = currentProblem;
+            const info = layoutInfo;
+            
+            let fromVal, toVal;
+            
+            // تعیین مقادیر مبدا و مقصد برای بررسی ضرب
+            // مهم: همیشه از مقادیر واقعی ریاضی استفاده می‌کنیم، نه چیزی که در باکس نوشته شده
+            // (چون باکس مقصد ممکن است خالی یا اشتباه باشد)
+            
+            if (boxNum === 1) { 
+                // سطر راهنما
+                const startIdx = info.guideRow === 'top' ? info.startIdxTop : info.startIdxBot;
+                const endIdx = info.guideRow === 'top' ? info.endIdxTop : info.endIdxBot;
+                fromVal = p.vals[startIdx];
+                toVal = p.vals[endIdx];
+            } else { 
+                // سطر هدف
+                const startIdx = info.guideRow === 'top' ? info.startIdxBot : info.startIdxTop;
+                const endIdx = info.guideRow === 'top' ? info.endIdxBot : info.endIdxTop;
+                fromVal = p.vals[startIdx];
+                toVal = p.vals[endIdx];
+            }
+
+            const nInput = document.getElementById(`fb${boxNum}_num`);
+            const dInput = document.getElementById(`fb${boxNum}_den`);
+            const uN = parseInt(nInput.value);
+            const uD = parseInt(dInput.value);
+
+            if (isNaN(uN) || isNaN(uD)) return; 
+
+            // بررسی تناسب: آیا fromVal * (uN/uD) == toVal ؟
+            // معادل: fromVal * uN == toVal * uD
+            if (Math.abs((fromVal * uN) - (toVal * uD)) < 0.001) { // استفاده از تلورانس برای اطمینان
+                // درست است
+                nInput.disabled = true; dInput.disabled = true;
+                nInput.style.borderColor = "var(--accent)"; dInput.style.borderColor = "var(--accent)";
+                document.querySelector(`#factorBox${boxNum} .btn-mini-check`).style.display = 'none';
+                
+                // تغییر استایل فلش
+                const pathId = boxNum === 1 ? 'guidePath' : 'targetPath';
+                const pathEl = document.getElementById(pathId);
+                pathEl.classList.remove('draw-anim'); // حذف انیمیشن رسم
+                pathEl.style.strokeDasharray = 'none'; // خط ممتد
+
+                if (boxNum === 1) {
+                    step = 2;
+                    setTimeout(showTargetArrow, 500);
+                } else {
+                    // پایان مراحل ضرب
+                    if (initialAttemptCorrect) {
+                         document.getElementById('feedback').innerText = "عالی! سوال تمام شد.";
+                         document.getElementById('nextBtn').style.display = 'inline-block';
+                    } else {
+                        step = 3;
+                        const mainInput = document.getElementById('mainInput');
+                        mainInput.disabled = false;
+                        mainInput.value = '';
+                        mainInput.focus();
+                        document.getElementById('feedback').innerText = "حالا که الگوی ضرب را پیدا کردی، پاسخ صحیح را بنویس.";
+                        document.getElementById('feedback').style.color = "#34495e";
+                        const chkBtn = document.getElementById('mainCheckBtn');
+                        chkBtn.style.display = 'inline-block';
+                        chkBtn.innerText = "ثبت نهایی";
+                    }
+                }
+            } else {
+                nInput.style.borderColor = "var(--wrong)";
+                dInput.style.borderColor = "var(--wrong)";
+            }
+        }
+
+        function finalizeAnswer() {
+            const input = document.getElementById('mainInput');
+            const val = parseInt(input.value);
+            const feedback = document.getElementById('feedback');
+
+            if (val === currentProblem.ans) {
+                input.classList.add('correct');
+                input.disabled = true;
+                feedback.innerText = "آفرین! صحیح است.";
+                feedback.style.color = "var(--accent)";
+                document.getElementById('mainCheckBtn').style.display = 'none';
+                document.getElementById('nextBtn').style.display = 'inline-block';
+            } else {
+                input.classList.add('wrong');
+                feedback.innerText = "دقت کن! ضرب را روی عدد مبدا اعمال کن.";
+                setTimeout(() => input.classList.remove('wrong'), 1000);
+            }
+        }
+
+        window.onload = generateProblem;
+        // بروزرسانی مختصات هنگام تغییر اندازه صفحه
+        window.onresize = () => {
+             // اگر در میانه حل سوال باشیم، ممکن است فلش‌ها به هم بریزد
+             // برای سادگی، فعلا کاری نمی‌کنیم یا می‌توانیم ریلود کنیم
+             // اما چون از getBoundingClientRect در لحظه ترسیم استفاده می‌کنیم،
+             // فقط با رفرش صفحه درست می‌شود.
+        };
+
+    </script>
+</body>
+</html>
