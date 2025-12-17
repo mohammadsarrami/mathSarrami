@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آزمایشگاه ریاضی - تراز دقیق</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #444;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        /* --- کنترل پنل --- */
+        .controls {
+            background: #fff;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            margin-bottom: 40px;
+            width: 95%;
+            max-width: 750px;
+            border-right: 5px solid #8e44ad;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        label {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        select {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            font-family: 'Vazirmatn', sans-serif;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .target-inputs {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            direction: ltr; 
+            background: #eef2f3;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        .input-mini {
+            width: 45px;
+            height: 35px;
+            text-align: center;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 1.1rem;
+        }
+
+        /* --- محیط آزمایشگاه (اصلاح شده برای تراز دقیق) --- */
+        .lab-area {
+            display: flex;
+            align-items: flex-start; /* تراز از بالا برای هماهنگی جعبه ها */
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px; 
+            background: white;
+            padding: 40px 30px 20px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            direction: ltr; 
+        }
+
+        .fraction-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .fraction-label {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-weight: bold;
+            font-family: 'Vazirmatn', sans-serif;
+            margin-top: 5px;
+        }
+
+        .mixed-fraction-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff;
+            padding: 10px;
+            border-radius: 12px;
+            border: 2px dashed #dcdcdc;
+            transition: border-color 0.3s;
+            /* ارتفاع ثابت برای هماهنگی با نمادها */
+            height: 140px; 
+            box-sizing: border-box;
+        }
+
+        .mixed-fraction-group:focus-within {
+            border-color: #8e44ad;
+        }
+
+        .whole-number {
+            width: 50px;
+            height: 60px;
+            font-size: 1.8rem;
+            text-align: center;
+            border: 2px solid #f39c12; 
+            border-radius: 8px;
+            background-color: #fef9e7;
+        }
+        
+        .fraction-part {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fraction-input {
+            width: 55px;
+            height: 55px;
+            font-size: 1.5rem;
+            text-align: center;
+            border: 2px solid #2980b9; 
+            border-radius: 8px;
+            margin: 2px;
+            background-color: #ebf5fb;
+        }
+
+        .fraction-line {
+            width: 100%;
+            height: 3px;
+            background-color: #2c3e50;
+            margin: 4px 0;
+            border-radius: 2px;
+        }
+
+        /* --- اصلاح تراز نمادها --- */
+        .symbol {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #555;
+            /* ارتفاع برابر با باکس کسر */
+            height: 140px; 
+            display: flex;
+            align-items: center; /* تراز عمودی دقیق */
+            justify-content: center;
+            margin: 0 5px;
+        }
+
+        /* --- اصلاح تراز باکس جواب --- */
+        .result-box {
+            font-size: 2.2rem;
+            margin-left: 10px;
+            /* ارتفاع برابر با باکس کسر */
+            height: 140px;
+            display: flex;
+            align-items: center; /* تراز عمودی دقیق */
+        }
+
+        /* --- دکمه و فیدبک --- */
+        .btn-check {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 60px;
+            font-size: 1.3rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Vazirmatn', sans-serif;
+            box-shadow: 0 5px 0 #1a5276;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        .btn-check:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #1a5276;
+        }
+
+        #feedback {
+            margin-top: 25px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            min-height: 60px;
+            text-align: center;
+            background: #fff;
+            padding: 20px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            border: 1px solid #ddd;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .success { 
+            color: #155724; 
+            background-color: #d4edda !important; 
+            border-color: #c3e6cb !important; 
+            display: block !important;
+        }
+        
+        .error { 
+            color: #721c24; 
+            background-color: #f8d7da !important; 
+            border-color: #f5c6cb !important;
+            display: block !important;
+        }
+
+        .hint-text {
+            font-weight: normal;
+            margin-top: 10px;
+            font-size: 1.1rem;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>آزمایشگاه کسرها 📐</h1>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>عملیات:</label>
+            <select id="operationSelect" onchange="updateUI()">
+                <option value="*">ضرب ( × )</option>
+                <option value="/">تقسیم ( ÷ )</option>
+                <option value="+">جمع ( + )</option>
+                <option value="-">تفریق ( - )</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>مقایسه:</label>
+            <select id="comparatorSelect" onchange="updateUI()">
+                <option value="=">مساوی ( = )</option>
+                <option value=">">بزرگتر ( &gt; )</option>
+                <option value="<">کوچکتر ( &lt; )</option>
+            </select>
+        </div>
+
+        <div class="control-group">
+            <label>هدف نهایی:</label>
+            <div class="target-inputs">
+                <input type="number" id="tW" class="input-mini" placeholder="0" onchange="updateUI()">
+                <div style="display:flex; flex-direction:column; align-items:center;">
+                    <input type="number" id="tN" class="input-mini" value="8" onchange="updateUI()">
+                    <div style="width:100%; height:1px; background:#333; margin:2px 0;"></div>
+                    <input type="number" id="tD" class="input-mini" value="15" onchange="updateUI()">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lab-area">
+        
+        <!-- کسر اول -->
+        <div class="fraction-wrapper">
+            <div class="mixed-fraction-group">
+                <input type="number" id="w1" class="whole-number" placeholder="0">
+                <div class="fraction-part">
+                    <input type="number" id="n1" class="fraction-input" placeholder="?">
+                    <div class="fraction-line"></div>
+                    <input type="number" id="d1" class="fraction-input" placeholder="?">
+                </div>
+            </div>
+            <div class="fraction-label">کسر اول</div>
+        </div>
+
+        <!-- نماد عملیات -->
+        <div class="symbol" id="opSymbol">×</div>
+
+        <!-- کسر دوم -->
+        <div class="fraction-wrapper">
+            <div class="mixed-fraction-group">
+                <input type="number" id="w2" class="whole-number" placeholder="0">
+                <div class="fraction-part">
+                    <input type="number" id="n2" class="fraction-input" placeholder="?">
+                    <div class="fraction-line"></div>
+                    <input type="number" id="d2" class="fraction-input" placeholder="?">
+                </div>
+            </div>
+            <div class="fraction-label">کسر دوم</div>
+        </div>
+
+        <!-- نماد مقایسه -->
+        <div class="symbol" id="compSymbol">=</div>
+
+        <!-- نتیجه -->
+        <div class="result-box" id="targetLatex"></div>
+    </div>
+
+    <button class="btn-check" onclick="checkAnswer()">بررسی کن 🔍</button>
+    <div id="feedback"></div>
+
+    <script>
+        // --- توابع کمکی ریاضی (Fraction Engine) ---
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function simplifyFraction(num, den) {
+            if (den === 0) return { n: 0, d: 0, error: true }; 
+            if (num === 0) return { n: 0, d: 1, error: false };
+            
+            let sign = 1;
+            if (num * den < 0) sign = -1;
+            num = Math.abs(num);
+            den = Math.abs(den);
+
+            let common = gcd(num, den);
+            return {
+                n: sign * (num / common),
+                d: den / common,
+                error: false
+            };
+        }
+
+        function toImproper(w, n, d) {
+            if (d === 0 && n !== 0) return { n:0, d:0, val: 0, error: true };
+            if (d === 0) return { n: w, d: 1, val: w, error: false };
+            let num = w * d + n;
+            return { n: num, d: d, val: w + n/d, error: false };
+        }
+
+        function calculateFractionOperation(f1, f2, op) {
+            let resNum, resDen;
+            if (op === "*") { resNum = f1.n * f2.n; resDen = f1.d * f2.d; }
+            else if (op === "/") { resNum = f1.n * f2.d; resDen = f1.d * f2.n; }
+            else if (op === "+") { resNum = (f1.n * f2.d) + (f2.n * f1.d); resDen = f1.d * f2.d; }
+            else if (op === "-") { resNum = (f1.n * f2.d) - (f2.n * f1.d); resDen = f1.d * f2.d; }
+            return simplifyFraction(resNum, resDen);
+        }
+
+        function fractionToLatex(fObj) {
+            if (fObj.error) return "\\text{خطا}";
+            if (fObj.d === 1) return `${fObj.n}`; 
+            if (fObj.n === 0) return "0";
+            return `\\frac{${fObj.n}}{${fObj.d}}`;
+        }
+
+        // --- UI Functions ---
+        function getVal(id) {
+            const val = document.getElementById(id).value;
+            return val === "" ? 0 : parseFloat(val);
+        }
+
+        function updateUI() {
+            const op = document.getElementById('operationSelect').value;
+            const comp = document.getElementById('comparatorSelect').value;
+            
+            let opChar = "×";
+            if(op === "/") opChar = "÷";
+            if(op === "+") opChar = "+";
+            if(op === "-") opChar = "-";
+
+            document.getElementById('opSymbol').innerText = opChar;
+            document.getElementById('compSymbol').innerText = comp;
+
+            const tW = getVal('tW');
+            const tN = getVal('tN');
+            const tD = getVal('tD');
+
+            let latexStr = "";
+            if (tD === 0 && tN !== 0) {
+                 latexStr = "?";
+            } else {
+                if (tW !== 0 && tN !== 0) latexStr = `${tW}\\frac{${tN}}{${tD}}`;
+                else if (tW !== 0 && tN === 0) latexStr = `${tW}`;
+                else if (tN !== 0) latexStr = `\\frac{${tN}}{${tD}}`;
+                else latexStr = "0";
+            }
+            
+            const outputDiv = document.getElementById('targetLatex');
+            outputDiv.innerHTML = `$$ ${latexStr} $$`;
+            MathJax.typesetPromise([outputDiv]);
+            document.getElementById('feedback').style.display = 'none';
+        }
+
+        function checkAnswer() {
+            const feedback = document.getElementById('feedback');
+            
+            const w1 = getVal('w1'); const n1 = getVal('n1'); const d1 = getVal('d1');
+            const w2 = getVal('w2'); const n2 = getVal('n2'); const d2 = getVal('d2');
+            
+            const f1 = toImproper(w1, n1, d1);
+            const f2 = toImproper(w2, n2, d2);
+
+            if (f1.error || f2.error) {
+                feedback.innerHTML = "خطا: مخرج کسرها نمی‌تواند صفر باشد ⚠️";
+                feedback.className = "error";
+                return;
+            }
+
+            const op = document.getElementById('operationSelect').value;
+            if (op === "/" && f2.n === 0) {
+                feedback.innerHTML = "خطا: تقسیم بر صفر امکان‌پذیر نیست! ⛔";
+                feedback.className = "error";
+                return;
+            }
+
+            const userFraction = calculateFractionOperation(f1, f2, op);
+            const userVal = userFraction.n / userFraction.d;
+
+            const tW = getVal('tW'); const tN = getVal('tN'); const tD = getVal('tD');
+            const targetFractionRaw = toImproper(tW, tN, tD);
+            const targetFraction = simplifyFraction(targetFractionRaw.n, targetFractionRaw.d);
+            const targetVal = targetFraction.n / targetFraction.d;
+
+            const comp = document.getElementById('comparatorSelect').value;
+            const epsilon = 0.000001;
+            let isCorrect = false;
+
+            if (comp === "=") isCorrect = Math.abs(userVal - targetVal) < epsilon;
+            else if (comp === ">") isCorrect = userVal > targetVal;
+            else if (comp === "<") isCorrect = userVal < targetVal;
+
+            const userLatex = fractionToLatex(userFraction);
+            const targetLatex = fractionToLatex(targetFraction);
+
+            if (isCorrect) {
+                feedback.innerHTML = `
+                    <div>آفرین! کاملاً درسته ✅</div>
+                    <div class="hint-text">
+                        حاصل عبارت تو: $$ ${userLatex} $$
+                    </div>
+                `;
+                feedback.className = "success";
+            } else {
+                let advice = "";
+                if (comp === "=") {
+                    if (userVal > targetVal) advice = "حاصل عبارت تو بزرگتر از هدف شد.";
+                    else advice = "حاصل عبارت تو کوچکتر از هدف شد.";
+                } else if (comp === ">") {
+                    advice = "باید حاصل بزرگتر می‌شد، اما نیست.";
+                } else if (comp === "<") {
+                    advice = "باید حاصل کوچکتر می‌شد، اما نیست.";
+                }
+
+                feedback.innerHTML = `
+                    <div>نادرست ❌</div>
+                    <div class="hint-text">
+                        حاصل عبارت تو شد: $$ ${userLatex} $$
+                        در حالی که هدف برابر است با: $$ ${targetLatex} $$
+                        <br>
+                        ${advice}
+                    </div>
+                `;
+                feedback.className = "error";
+            }
+            MathJax.typesetPromise([feedback]);
+        }
+
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
