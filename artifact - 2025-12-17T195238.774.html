@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>سیرک ریاضی: چالش دو پرنده</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lalezar&display=swap');
+
+        * {
+            box-sizing: border-box;
+            -webkit-user-select: none; user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: none;
+        }
+
+        body {
+            margin: 0; padding: 0;
+            background-color: #2c3e50;
+            overflow: hidden;
+            font-family: 'Lalezar', cursive;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            height: 100vh; width: 100vw;
+        }
+
+        #gameContainer {
+            position: relative;
+            width: 95%; 
+            max-width: 800px;
+            height: 55vh; 
+            min-height: 320px;
+            max-height: 450px;
+            background: #000;
+            border: 4px solid #34495e;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .hud {
+            position: absolute; top: 10px; left: 0; right: 0;
+            display: flex; justify-content: space-between; padding: 0 15px;
+            z-index: 15; pointer-events: none; direction: rtl;
+        }
+        .score-box, .life-box {
+            background: rgba(0,0,0,0.6); padding: 5px 12px; border-radius: 20px;
+            border: 2px solid #fff; color: #f1c40f; font-size: 18px;
+            display: flex; align-items: center; gap: 5px;
+        }
+        
+        .pause-btn {
+            pointer-events: auto; background: #e74c3c;
+            border: 2px solid #fff; color: white; width: 40px; height: 40px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 20px; cursor: pointer;
+        }
+
+        .controls-area {
+            width: 100%;
+            display: flex; justify-content: space-around; 
+            align-items: center;
+            padding-bottom: 20px;
+        }
+        .btn-ctrl {
+            pointer-events: auto; 
+            width: 90px; height: 90px;
+            border-radius: 50%; border: 4px solid #fff;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; font-size: 20px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.5); cursor: pointer;
+            text-shadow: 1px 1px 2px black;
+            transition: transform 0.1s;
+        }
+        .btn-ctrl:active, .btn-ctrl.pressed { transform: scale(0.90); opacity: 0.9; border-color: #f1c40f; }
+        
+        #btnDuck { background: linear-gradient(135deg, #3498db, #2980b9); }
+        #btnJump { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+
+        .overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.92); z-index: 100;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; color: white; padding: 10px;
+        }
+        
+        .overlay h1 { margin: 0 0 5px 0; font-size: 32px; color: #f39c12; }
+        .overlay h3 { margin: 0 0 15px 0; font-size: 18px; color: #ecf0f1; }
+        
+        .big-btn {
+            background: linear-gradient(to bottom, #2ecc71, #27ae60);
+            color: white; border: none; padding: 10px 40px;
+            font-size: 24px; border-radius: 50px; cursor: pointer;
+            font-family: 'Lalezar'; margin-top: 10px;
+            box-shadow: 0 4px 0 #1e8449;
+        }
+        .big-btn:active { transform: translateY(4px); box-shadow: none; }
+        
+        #mathPanel {
+            background: #fff; padding: 10px 15px; border-radius: 15px;
+            border: 5px solid #8e44ad; width: 95%; max-width: 400px;
+            display: flex; flex-direction: column; align-items: center;
+            color: #333; position: relative; direction: rtl;
+            transition: transform 0.1s;
+        }
+        
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+            40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+
+        .fraction-row { 
+            display: flex; align-items: center; justify-content: center; 
+            gap: 5px; margin: 10px 0; width: 100%; min-height: 60px;
+            direction: ltr; flex-wrap: wrap;
+        }
+
+        .frac { display: flex; flex-direction: column; align-items: center; font-size: 22px; z-index: 2; margin: 0 2px; }
+        .frac-line { width: 100%; height: 2px; background: #000; margin: 2px 0; }
+        
+        .input-num {
+            font-family: 'Lalezar'; font-size: 22px; text-align: center;
+            border: 2px solid #bdc3c7; border-radius: 8px; 
+            width: 50px; height: 45px;
+            background: #ecf0f1; color: #000; direction: ltr; outline: none;
+            -moz-appearance: textfield;
+        }
+        .input-num:focus { border-color: #e74c3c; background: #fff; }
+        .op-sign { font-size: 28px; margin: 0 3px; color: #d35400; font-weight: bold; }
+        
+        #feedbackMsg {
+            height: 25px; margin-top: 5px; font-size: 18px; font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="gameContainer">
+    <canvas id="gameCanvas" width="800" height="450"></canvas>
+    
+    <div class="hud">
+        <div style="display:flex; gap:10px;">
+            <div class="score-box">امتیاز: <span id="scoreVal">۰</span></div>
+            <div class="life-box"><span id="hearts" style="color: #e74c3c;">❤❤❤</span></div>
+        </div>
+        <div class="pause-btn" onclick="togglePause()">⏸</div>
+    </div>
+    
+    <div id="startScreen" class="overlay">
+        <h1>🎪 سیرک ریاضی 🎪</h1>
+        <ul style="text-align: right; direction: rtl; list-style: none; padding: 0; font-size: 16px; margin-bottom: 15px; line-height: 1.8;">
+            <li>🦅 <b>دو پرنده:</b> فقط با <span style="color:#3498db">نشستن</span> رد می‌شوی! (پرش ممنوع)</li>
+            <li>💯 <b>امتیاز:</b> فقط جواب اول مهمه (+۵ یا -۵).</li>
+            <li>⛔ <b>اجبار:</b> تا جواب درست ندی، بازی راه نمیفته!</li>
+        </ul>
+        <button class="big-btn" onclick="startGame()">شروع بازی ▶</button>
+    </div>
+
+    <div id="gameOverScreen" class="overlay" style="display: none;">
+        <h1 style="color:#e74c3c;">بازی تمام شد!</h1>
+        <h3>امتیاز نهایی: <span id="finalScore">۰</span></h3>
+        <button class="big-btn" onclick="startGame()">تلاش دوباره ↺</button>
+    </div>
+    
+    <div id="pauseScreen" class="overlay" style="display: none;">
+        <h1 style="color:#f39c12;">بازی متوقف شد</h1>
+        <button class="big-btn" onclick="togglePause()">ادامه بازی ▶</button>
+    </div>
+
+    <div id="mathScreen" class="overlay" style="display: none;">
+        <div id="mathPanel">
+            <p id="qText" style="font-size:16px; color:#555; margin:10px 0 5px 0;">...</p>
+            <div class="fraction-row" id="quizArea"></div>
+            <div id="feedbackMsg"></div>
+            <button class="big-btn" style="font-size: 18px; padding: 5px 25px; background: #8e44ad; box-shadow: 0 4px 0 #6c3483; margin-top:5px;" onclick="checkAnswer()">تایید ✓</button>
+        </div>
+    </div>
+</div>
+
+<div class="controls-area">
+    <div id="btnDuck" class="btn-ctrl"><span>⬇</span>نشستن</div>
+    <div id="btnJump" class="btn-ctrl"><span>⬆</span>پرش</div>
+</div>
+
+<script>
+    const userMusicURL = "https://uploadkon.ir/uploads/d1fa17_25Boxing-music-17.mp3";
+    let bgAudio = new Audio();
+    bgAudio.src = userMusicURL; 
+    bgAudio.loop = true;
+    bgAudio.volume = 0.6;
+
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSoundEffect(type) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        if (type === 'correct') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1000, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        } else {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(100, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+        }
+    }
+
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d', { alpha: false });
+    
+    let frames = 0, score = 0, lives = 3, gameSpeed = 13;
+    let nextSpawnFrame = 0;
+    let isRunning = false, isPaused = false;
+    let obstacles = [];
+    const floorY = 350; 
+    
+    let currentObs = null;
+    let questionType = '', correctAns = {}; 
+    let isFirstAttempt = true; // متغیر برای بررسی بار اول پاسخگویی
+
+    const lion = {
+        x: 100, y: floorY, w: 50, h: 70, dy: 0, gravity: 0.85, jumpPower: -17, 
+        isJumping: false, isDucking: false, invincible: 0,
+        draw: function() {
+            if (this.invincible > 0 && Math.floor(this.invincible/4)%2===0) return;
+            ctx.save();
+            let dH = this.isDucking ? 40 : 70; let dY = this.y - dH;
+            ctx.fillStyle = "#d35400"; ctx.fillRect(this.x, dY, this.w, dH); 
+            ctx.fillStyle = "#8e44ad"; ctx.fillRect(this.x+10, dY+10, 30, this.isDucking?20:40); 
+            if(!this.isDucking) {
+                ctx.fillStyle = "#ecf0f1"; ctx.beginPath(); ctx.arc(this.x+25, dY-12, 12, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = "#000"; ctx.beginPath(); ctx.arc(this.x+30, dY-12, 2, 0, Math.PI*2); ctx.fill();
+            }
+            ctx.restore();
+        },
+        update: function() {
+            this.y += this.dy;
+            if (this.y < floorY) { this.dy += this.gravity; this.isJumping = true; } 
+            else { this.y = floorY; this.dy = 0; this.isJumping = false; }
+            if (this.invincible > 0) this.invincible--;
+        }
+    };
+
+    function setupControls() {
+        const btnJump = document.getElementById('btnJump');
+        const btnDuck = document.getElementById('btnDuck');
+        const trigger = (act, st) => {
+            if (!isRunning || isPaused) return;
+            if (act === 'jump') {
+                if (st && !lion.isJumping) lion.dy = lion.jumpPower;
+                btnJump.classList.toggle('pressed', st);
+            }
+            if (act === 'duck') {
+                lion.isDucking = st;
+                btnDuck.classList.toggle('pressed', st);
+            }
+        };
+        const addT = (el, act) => {
+            el.addEventListener('touchstart', (e)=>{ e.preventDefault(); trigger(act,true); }, {passive:false});
+            el.addEventListener('touchend', (e)=>{ e.preventDefault(); trigger(act,false); }, {passive:false});
+            el.addEventListener('mousedown', ()=>{trigger(act,true);});
+            el.addEventListener('mouseup', ()=>{trigger(act,false);});
+            el.addEventListener('mouseleave', ()=>{trigger(act,false);});
+        };
+        addT(btnJump, 'jump');
+        addT(btnDuck, 'duck');
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowUp' || e.code === 'Space') trigger('jump', true);
+            if (e.code === 'ArrowDown') trigger('duck', true);
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowDown') trigger('duck', false);
+            if (e.code === 'ArrowUp' || e.code === 'Space') trigger('jump', false);
+        });
+    }
+
+    window.startGame = function() {
+        bgAudio.play().then(() => { console.log("Music Playing"); }).catch(e => { console.log("Music Autoplay blocked", e); });
+        document.querySelectorAll('.overlay').forEach(el => el.style.display = 'none');
+        score = 0; lives = 3; frames = 0; obstacles = []; 
+        isRunning = true; isPaused = false;
+        lion.y = floorY; lion.dy = 0; lion.invincible = 0;
+        nextSpawnFrame = 40; 
+        updateUI(); gameLoop();
+    };
+
+    function togglePause() {
+        if (!isRunning && document.getElementById('gameOverScreen').style.display !== 'none') return;
+        isPaused = !isPaused;
+        const screen = document.getElementById('pauseScreen');
+        if (isPaused) {
+            screen.style.display = 'flex'; isRunning = false; bgAudio.pause();
+        } else {
+            screen.style.display = 'none'; isRunning = true; bgAudio.play().catch(()=>{}); gameLoop();
+        }
+    }
+
+    function gameLoop() {
+        if (!isRunning) return;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        ctx.fillStyle = "#2c3e50"; ctx.fillRect(0,0, canvas.width, canvas.height);
+        let off = (frames * gameSpeed) % 40;
+        ctx.fillStyle = "#e67e22"; ctx.fillRect(0, floorY, canvas.width, 100);
+        ctx.fillStyle = "#d35400"; 
+        for(let i=-1; i<25; i++) { ctx.fillRect((i*40)-off, floorY, 20, 100); }
+        
+        lion.update(); lion.draw();
+        
+        if (frames > nextSpawnFrame) {
+            let r = Math.random();
+            if (r < 0.2) { obstacles.push({ type: 'RING', x: canvas.width, solved: false }); } 
+            else if (r < 0.6) { 
+                // موانع "دو پرنده" (DOUBLE_BIRD)
+                // این مانع شامل دو پرنده است، یکی بالا، یکی پایین
+                // فقط نشستن جواب می‌دهد
+                obstacles.push({ type: 'DOUBLE_BIRD', x: canvas.width, w: 45 }); 
+            } 
+            else { obstacles.push({ type: 'FENCE', x: canvas.width, w: 20, h: 70 }); }
+            nextSpawnFrame = frames + Math.floor(Math.random() * 50 + 60); 
+        }
+
+        for (let i = 0; i < obstacles.length; i++) {
+            let obs = obstacles[i];
+            obs.x -= gameSpeed;
+
+            if (obs.type === 'RING') {
+                drawRing(obs.x, floorY);
+                if (!obs.solved && obs.x < lion.x + 50 && obs.x + 20 > lion.x) showMathQuestion(obs);
+            } 
+            else if (obs.type === 'DOUBLE_BIRD') {
+                // رسم دو پرنده (یکی پایین برای زدن سر ایستاده، یکی بالا برای زدن پرش)
+                // پرنده پایین: ارتفاع حدود سر (y-65)
+                // پرنده بالا: ارتفاع حدود اوج پرش (y-130)
+                drawBird(obs.x, floorY - 65, obs.w, 40);
+                drawBird(obs.x, floorY - 140, obs.w, 40);
+                
+                // منطق برخورد: فقط اگر نشسته نباشد، برخورد میکند
+                // چون دو پرنده کل فضای بالا را اشغال کرده اند
+                if (lion.x < obs.x + obs.w && lion.x + lion.w > obs.x) {
+                    if (!lion.isDucking) {
+                        hitLion();
+                    }
+                }
+            } 
+            else if (obs.type === 'FENCE') {
+                drawFence(obs.x, floorY);
+                if (lion.x < obs.x+obs.w && lion.x+lion.w > obs.x && !lion.isDucking && lion.y > floorY-50) hitLion();
+            }
+            if (obs.x < -100) { obstacles.splice(i, 1); i--; }
+        }
+        frames++;
+        requestAnimationFrame(gameLoop);
+    }
+
+    function hitLion() {
+        if (lion.invincible > 0) return;
+        lives--; updateUI(); lion.invincible = 60;
+        ctx.fillStyle = "rgba(231, 76, 60, 0.5)"; ctx.fillRect(0,0,canvas.width, canvas.height);
+        if(navigator.vibrate) navigator.vibrate(300);
+        playSoundEffect('wrong');
+        if (lives <= 0) stopGame();
+    }
+    
+    function stopGame() {
+        isRunning = false; bgAudio.pause();
+        document.getElementById('finalScore').innerText = toFa(score);
+        document.getElementById('gameOverScreen').style.display = 'flex';
+    }
+
+    function drawRing(x,y) {
+        ctx.save(); ctx.translate(x,y); 
+        ctx.strokeStyle="#c0392b"; ctx.lineWidth=5; ctx.beginPath(); ctx.ellipse(10, -40, 10, 40, 0, 0, Math.PI*2); ctx.stroke();
+        ctx.strokeStyle="#f1c40f"; ctx.lineWidth=2; ctx.beginPath(); ctx.ellipse(10, -40, 10, 40, 0, 0, Math.PI*2); ctx.stroke();
+        ctx.fillStyle = "#fff"; ctx.font = "20px Arial"; ctx.fillText("?", 5, -35); ctx.restore();
+    }
+    function drawBird(x,y,w,h) { 
+        let wing = (Math.floor(frames/5)%2 === 0) ? -10 : 10;
+        ctx.fillStyle="#3498db"; ctx.fillRect(x,y,w,h-15); 
+        ctx.fillStyle="#2980b9"; ctx.beginPath(); ctx.moveTo(x+10,y+10); ctx.lineTo(x+20,y+10-wing); ctx.lineTo(x+30,y+10); ctx.fill();
+        ctx.fillStyle="#f39c12"; ctx.beginPath(); ctx.moveTo(x,y+10); ctx.lineTo(x-10,y+15); ctx.lineTo(x,y+20); ctx.fill(); 
+    }
+    function drawFence(x,y) { 
+        ctx.fillStyle="#8d6e63"; ctx.fillRect(x,y-60,20,60); 
+        let fH = (Math.floor(frames/4)%2===0) ? 25 : 30;
+        ctx.fillStyle="#e74c3c"; ctx.beginPath(); ctx.moveTo(x, y-60); ctx.lineTo(x+10, y-60-fH); ctx.lineTo(x+20, y-60); ctx.fill();
+    }
+
+    function showMathQuestion(obs) {
+        isRunning = false; bgAudio.pause();
+        currentObs = obs;
+        isFirstAttempt = true; // ریست کردن فلگ تلاش اول برای سوال جدید
+
+        document.getElementById('mathScreen').style.display = 'flex';
+        document.getElementById('quizArea').innerHTML = '';
+        document.getElementById('feedbackMsg').innerText = '';
+        document.getElementById('mathPanel').classList.remove('shake');
+        
+        if (Math.random() > 0.5) setupDivisionQuestion(); else setupProportionQuestion();
+    }
+
+    function setupDivisionQuestion() {
+        questionType = 'DIV';
+        document.getElementById('qText').innerText = "پاسخ تقسیم را وارد کنید:";
+        let b = Math.floor(Math.random() * 8) + 2; 
+        let d; do { d = Math.floor(Math.random() * 8) + 2; } while (d === b);
+        let a = Math.floor(Math.random() * 8) + 1; 
+        let c = Math.floor(Math.random() * 8) + 1;
+        correctAns = { val: (a * d) / (b * c) };
+        let html = `
+            <div class="frac"><div>${toFa(a)}</div><div class="frac-line"></div><div>${toFa(b)}</div></div>
+            <div class="op-sign">÷</div>
+            <div class="frac"><div>${toFa(c)}</div><div class="frac-line"></div><div>${toFa(d)}</div></div>
+            <div class="op-sign">=</div>
+            <div class="frac">
+                <input id="ansN" class="input-num" type="tel" placeholder="؟" inputmode="numeric">
+                <div class="frac-line"></div>
+                <input id="ansD" class="input-num" type="tel" placeholder="؟" inputmode="numeric">
+            </div>
+        `;
+        document.getElementById('quizArea').innerHTML = html;
+        setTimeout(() => document.getElementById('ansN').focus(), 300);
+    }
+
+    function setupProportionQuestion() {
+        questionType = 'PROP';
+        document.getElementById('qText').innerText = "جای خالی را پر کنید:";
+        const baseRatios = [{n:2, d:3}, {n:3, d:4}, {n:2, d:5}, {n:3, d:5}, {n:4, d:7}, {n:3, d:8}];
+        let base = baseRatios[Math.floor(Math.random() * baseRatios.length)];
+        let m1 = Math.floor(Math.random() * 3) + 2; 
+        let m2 = m1 + Math.floor(Math.random() * 2) + 1; 
+        let sN = base.n * m1; let sD = base.d * m1;
+        let eN = base.n * m2; let eD = base.d * m2;
+        let vals = [sN, sD, eN, eD];
+        let hideIdx = Math.floor(Math.random() * 4);
+        correctAns = { val: vals[hideIdx] }; 
+        
+        let h = `<div class="frac">`;
+        h += (hideIdx===0) ? `<input id="inp0" class="input-num" type="tel" inputmode="numeric">` : `<div>${toFa(vals[0])}</div>`;
+        h += `<div class="frac-line"></div>`;
+        h += (hideIdx===1) ? `<input id="inp1" class="input-num" type="tel" inputmode="numeric">` : `<div>${toFa(vals[1])}</div>`;
+        h += `</div><div class="op-sign">=</div><div class="frac">`;
+        h += (hideIdx===2) ? `<input id="inp2" class="input-num" type="tel" inputmode="numeric">` : `<div>${toFa(vals[2])}</div>`;
+        h += `<div class="frac-line"></div>`;
+        h += (hideIdx===3) ? `<input id="inp3" class="input-num" type="tel" inputmode="numeric">` : `<div>${toFa(vals[3])}</div>`;
+        h += `</div>`;
+        document.getElementById('quizArea').innerHTML = h;
+        setTimeout(() => { let inp = document.querySelector('.input-num'); if(inp) inp.focus(); }, 300);
+    }
+
+    window.checkAnswer = function() {
+        let isCorrect = false;
+        if (questionType === 'DIV') {
+            const n = document.getElementById('ansN');
+            const d = document.getElementById('ansD');
+            if (n.value && d.value) {
+                let uN = parseInt(toEn(n.value)); let uD = parseInt(toEn(d.value));
+                if (uD !== 0 && Math.abs((uN / uD) - correctAns.val) < 0.001) isCorrect = true;
+            }
+        } 
+        else if (questionType === 'PROP') {
+            const inp = document.querySelector('.input-num');
+            if(inp && inp.value && parseInt(toEn(inp.value)) === correctAns.val) isCorrect = true;
+        }
+
+        const msgBox = document.getElementById('feedbackMsg');
+        const panel = document.getElementById('mathPanel');
+        
+        if (isCorrect) {
+            // پاسخ صحیح
+            playSoundEffect('correct');
+            
+            // محاسبه امتیاز فقط اگر تلاش اول باشد
+            if (isFirstAttempt) {
+                score += 5;
+                isFirstAttempt = false; // جلوگیری از امتیاز دهی مجدد
+            }
+
+            msgBox.innerText = "آفرین! صحیح است ✓";
+            msgBox.style.color = "#27ae60";
+            panel.style.borderColor = "#27ae60";
+            
+            // ویبره کوتاه برای موفقیت
+            if(navigator.vibrate) navigator.vibrate(100);
+
+            setTimeout(() => {
+                document.getElementById('mathScreen').style.display = 'none';
+                currentObs.solved = true; 
+                lion.dy = -10; lion.y -= 5;
+                updateUI();
+                isRunning = true; bgAudio.play().catch(()=>{}); requestAnimationFrame(gameLoop);
+                panel.style.borderColor = "#8e44ad";
+            }, 1000);
+
+        } else {
+            // پاسخ غلط
+            playSoundEffect('wrong');
+            
+            // کسر امتیاز فقط اگر تلاش اول باشد
+            if (isFirstAttempt) {
+                score = Math.max(0, score - 5); // امتیاز منفی نشود
+                isFirstAttempt = false; // ثبت شد که تلاش اول انجام شده
+                updateUI();
+            }
+
+            msgBox.innerText = "اشتباه است! دوباره تلاش کن ✕";
+            msgBox.style.color = "#c0392b";
+            panel.style.borderColor = "#c0392b";
+            
+            // ویبره بلندتر برای خطا
+            if(navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 100]);
+            
+            panel.classList.remove('shake');
+            void panel.offsetWidth; 
+            panel.classList.add('shake');
+            
+            document.querySelectorAll('.input-num').forEach(inp => inp.value = '');
+            // نکته: پنجره بسته نمی‌شود، کاربر باید دوباره تلاش کند
+        }
+    };
+
+    function updateUI() {
+        document.getElementById('scoreVal').innerText = toFa(score);
+        let h=""; for(let i=0;i<3;i++) h+=(i<lives)?"❤":"🖤";
+        document.getElementById('hearts').innerHTML = h;
+    }
+    function toFa(n) { return (n+"").replace(/\d/g, d => "۰۱۲۳۴۵۶۷۸۹"[d]); }
+    function toEn(s) { return s.replace(/[۰-۹]/g, d => "0123456789"["۰۱۲۳۴۵۶۷۸۹".indexOf(d)]); }
+
+    setupControls();
+
+</script>
+</body>
+</html>
