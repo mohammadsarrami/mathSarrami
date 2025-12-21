@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ریاضی هوشمند: تراکتور دودی</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #050510; font-family: 'Tahoma', sans-serif; touch-action: none; }
+        #gameCanvas { display: block; width: 100%; height: 100vh; }
+        
+        .controls { 
+            position: absolute; bottom: 20px; width: 100%; height: 80px; 
+            display: flex; justify-content: space-between; direction: ltr;
+            padding: 0 30px; box-sizing: border-box; pointer-events: none; z-index: 50; 
+        }
+        .btn { 
+            width: 80px; height: 80px; 
+            background: rgba(0, 255, 255, 0.1); border: 2px solid #0ff; border-radius: 50%; 
+            pointer-events: auto; display: flex; align-items: center; justify-content: center; 
+            font-size: 20px; font-weight: bold; color: #0ff; backdrop-filter: blur(4px); 
+            box-shadow: 0 0 15px rgba(0,255,255,0.3); cursor: pointer; user-select: none;
+        }
+        .btn:active { background: rgba(0, 255, 255, 0.4); transform: scale(0.95); }
+        
+        #hud { 
+            position: absolute; top: 0; width: 100%; padding: 10px 0; 
+            text-align: center; color: #fff; z-index: 40; pointer-events: none; 
+            display: flex; flex-direction: column; align-items: center;
+        }
+        
+        .hud-top { 
+            width: 100%; display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 10px 25px; box-sizing: border-box; direction: rtl; margin-bottom: 5px;
+        }
+
+        .phase-container { font-size: 16px; font-weight: bold; text-shadow: 0 2px 4px rgba(0,0,0,0.8); margin-top: 5px; }
+
+        .score-box {
+            display: flex; flex-direction: column; align-items: flex-end; 
+            background: rgba(0, 0, 0, 0.6); padding: 8px 15px;
+            border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .score-text { color: #0f0; font-size: 18px; font-weight: bold; text-shadow: 0 0 5px rgba(0, 255, 0, 0.5); }
+        .designer-name { font-size: 11px; color: #ccc; margin-top: 4px; font-weight: normal; white-space: nowrap; }
+        
+        .question-box { 
+            background: rgba(16, 20, 35, 0.95); border: 2px solid #ffeb3b; border-radius: 15px; 
+            padding: 10px 15px; display: flex; flex-wrap: wrap; 
+            align-items: center; justify-content: center; gap: 8px; row-gap: 15px;
+            box-shadow: 0 0 25px rgba(255, 235, 59, 0.15); font-size: 18px; color: #ffeb3b; font-weight: bold;
+            direction: ltr; min-height: 60px; max-width: 95%; transition: all 0.3s ease;
+        }
+        
+        .math-step { display: inline-flex; align-items: center; }
+        .frac-group { display: inline-flex; flex-direction: column; align-items: center; margin: 0 2px; position: relative; vertical-align: middle;}
+        .mixed-wrapper { display: inline-flex; align-items: center; margin-right: 4px; }
+        .whole-num { font-size: 1.2em; margin-right: 2px; color: #ff9800; } 
+        .frac-line { width: 100%; height: 2px; background-color: currentColor; margin: 2px 0; }
+        .num, .den { padding: 0 3px; text-align: center; white-space: nowrap; font-size: 0.9em;}
+        .operator { font-size: 20px; margin: 0 5px; color: #fff; }
+        .eq-sign { font-size: 24px; margin: 0 8px; color: #888; }
+        .reciprocal-arrow { position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%); width: 30px; height: 20px; }
+        .reciprocal-arrow path { fill: none; stroke: #ff4444; stroke-width: 3; marker-end: url(#arrowhead); }
+
+        #phaseOverlay {
+            position: absolute; top: 40%; left: 0; width: 100%; text-align: center;
+            font-size: 32px; color: #fff; font-weight: bold; text-shadow: 0 0 10px #000; 
+            opacity: 0; pointer-events: none; transition: opacity 0.5s; z-index: 60; 
+            background: rgba(0,0,0,0.7); padding: 15px 0; direction: rtl;
+        }
+        .modal-overlay {
+            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95); z-index: 100;
+            justify-content: center; align-items: center; flex-direction: column; padding: 20px; overflow-y: auto;
+        }
+        #startScreen { display: flex; z-index: 200; background: #000; }
+        
+        .modal-content {
+            background: #1a1a2e; border: 3px solid #ff4444; border-radius: 20px;
+            padding: 20px; width: 100%; max-width: 500px; text-align: center;
+        }
+        .modal-text { color: #fff; font-size: 18px; line-height: 1.6; margin: 20px 0; direction: rtl; }
+        .retry-btn { 
+            background: #ff4444; color: white; border: none; padding: 15px 40px; 
+            font-size: 20px; border-radius: 30px; cursor: pointer; font-family: 'Tahoma'; 
+            margin-top: 10px; font-weight: bold; box-shadow: 0 0 20px rgba(255, 68, 68, 0.4);
+        }
+        .retry-btn:hover { transform: scale(1.05); }
+
+        .start-btn {
+            background: linear-gradient(45deg, #00e5ff, #2979ff); color: #000;
+            border: none; padding: 20px 60px; font-size: 24px; border-radius: 50px; 
+            cursor: pointer; font-family: 'Tahoma'; font-weight: bold; 
+            box-shadow: 0 0 25px rgba(0, 229, 255, 0.6); animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 229, 255, 0.6); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px rgba(0, 229, 255, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(0, 229, 255, 0.6); }
+        }
+
+        #levelCompleteModal .modal-content { border-color: #0f0; }
+        #levelCompleteModal .retry-btn { background: #0f0; color: #000; }
+        
+        .summary-container { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 10px; direction: ltr; background: #000; padding: 10px; border-radius: 10px; }
+        .sum-step { display: inline-flex; align-items: center; padding: 5px; border-radius: 5px; background: rgba(255,255,255,0.05); }
+        .sum-arrow { color: #555; font-size: 20px; }
+        
+        .step-clr-0 { color: #ff9800; } .step-clr-1 { color: #00bcd4; } 
+        .step-clr-2 { color: #e91e63; } .step-clr-3 { color: #d500f9; } .step-clr-4 { color: #4caf50; } 
+        svg { overflow: visible; }
+    </style>
+</head>
+<body>
+    
+    <svg style="position: absolute; width: 0; height: 0; overflow: hidden;" version="1.1" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                <polygon points="0 0, 10 3.5, 0 7" fill="#ff4444" />
+            </marker>
+        </defs>
+    </svg>
+
+    <div id="hud">
+        <div class="hud-top">
+            <div class="phase-container">
+                <span id="phaseText">شروع بازی</span>
+            </div>
+            <div class="score-box">
+                <span id="scoreText" class="score-text">امتیاز: ۰</span>
+                <span class="designer-name">طراح بازی ریاضی : آقای صرامی</span>
+            </div>
+        </div>
+        <div class="question-box" id="mathContainer"></div>
+        <div id="perfectRunBadge" style="display:none; color:#ffeb3b; font-size:12px; margin-top:5px; text-shadow:0 0 5px gold;">⭐ در حال کسب امتیاز کامل ⭐</div>
+    </div>
+
+    <div id="phaseOverlay">مرحله جدید</div>
+
+    <!-- Start Screen -->
+    <div id="startScreen" class="modal-overlay">
+        <div class="modal-content" style="border-color: #0ff;">
+            <h1 style="color:#0ff; margin:0;">ریاضی هوشمند</h1>
+            <p style="color:#ccc; font-size: 14px; margin-top: 5px;">طراح: آقای صرامی</p>
+            <p style="color:#fff; margin: 30px 0;">برای شروع بازی و پخش موزیک کلیک کنید:</p>
+            <button class="start-btn" onclick="startGame()">شروع بازی ▶</button>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="analysisModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2 style="color:#ff4444; margin:0;">دقت کن!</h2>
+            <div class="modal-text" id="errorExplanation">...</div>
+            <div style="color:#aaa; font-size:14px; margin-bottom:15px;">امتیاز این سوال از دست رفت.</div>
+            <button class="retry-btn" onclick="retryProblem()">تلاش مجدد</button>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="levelCompleteModal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 600px;">
+            <h2 style="color:#0f0; margin:0;">عالی بود!</h2>
+            <div class="modal-text">مراحل حل این مسئله:</div>
+            <div id="finalSummary" class="summary-container"></div>
+            <div class="modal-text" id="finalScoreDisplay" style="color:#ffeb3b; font-weight:bold; font-size:24px;"></div>
+            <button class="retry-btn" onclick="nextLevel()">سوال بعدی ❯</button>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+    <div class="controls">
+        <div class="btn" id="btnLeft">❮ چپ</div> 
+        <div class="btn" id="btnRight">راست ❯</div>
+    </div>
+
+    <script>
+        // استفاده از یک فایل موزیک پس زمینه آنلاین و سبک
+        var musicData = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"; 
+
+        const bgMusic = new Audio(musicData);
+        bgMusic.loop = true;
+        bgMusic.volume = 0.5;
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        let state = 'IDLE'; 
+        let totalScore = 0;
+        let isPerfectRun = true; 
+        
+        let playerLane = 0; 
+        let playerX = -width/4; 
+        let speed = 3.5; 
+        
+        let problem = null;
+        let currentPhase = 1; 
+        let solvedSteps = 0; 
+        let gates = [];
+        let previousProblems = []; 
+        let smokeParticles = [];
+
+        function startGame() {
+            // پخش موزیک
+            bgMusic.play().catch(e => console.log("Music error:", e));
+            document.getElementById('startScreen').style.display = 'none';
+            state = 'RUNNING';
+            newProblem();
+        }
+
+        // --- HTML Helpers ---
+        function htmlFrac(n, d, colorClass="") {
+            return `<div class="frac-group ${colorClass}"><div class="num">${n}</div><div class="frac-line"></div><div class="den">${d}</div></div>`;
+        }
+        function htmlMixed(w, n, d, colorClass="") {
+            return `<div class="mixed-wrapper ${colorClass}"><span class="whole-num">${w}</span>${htmlFrac(n, d, colorClass)}</div>`;
+        }
+
+        function updateMathDisplay() {
+            const container = document.getElementById('mathContainer');
+            if(!problem) return;
+            const p = problem;
+            let parts = [];
+
+            let q1Html = p.m1 ? htmlMixed(p.m1.w, p.m1.n, p.m1.d) : htmlFrac(p.n1_orig, p.d1_orig);
+            let q2Html = p.m2 ? htmlMixed(p.m2.w, p.m2.n, p.m2.d) : htmlFrac(p.n2_orig, p.d2_orig);
+            parts.push(`<div class="math-step">${q1Html} <span class="operator">÷</span> ${q2Html}</div>`);
+
+            if (solvedSteps >= 1) {
+                parts.push(`<div class="math-step">${htmlFrac(p.n1, p.d1)} <span class="operator">÷</span> ${htmlFrac(p.n2, p.d2)}</div>`);
+            }
+            if (solvedSteps >= 2) {
+                parts.push(`<div class="math-step">${htmlFrac(p.n1+'×'+p.d2, p.d1+'×'+p.d2)} <span class="operator">÷</span> ${htmlFrac(p.n2+'×'+p.d1, p.d2+'×'+p.d1)}</div>`);
+            }
+            if (solvedSteps >= 3) {
+                parts.push(`<div class="math-step">${htmlFrac(p.n1+'×'+p.d2, p.n2+'×'+p.d1)}</div>`);
+            }
+            if (solvedSteps >= 4) {
+                let step4Html = `<div class="math-step">${htmlFrac(p.n1, p.d1)} <span class="operator">×</span> <div class="frac-group"><div class="num">${p.d2}</div><div class="frac-line"></div><div class="den">${p.n2}</div><svg class="reciprocal-arrow" viewBox="0 0 50 30"><path d="M 45 0 Q 25 20 5 0" fill="none" stroke="#ff4444" stroke-width="2" marker-end="url(#arrowhead)" /></svg></div></div>`;
+                parts.push(step4Html);
+            }
+            if (solvedSteps >= 5) {
+                let finalN = p.n1 * p.d2;
+                let finalD = p.d1 * p.n2;
+                parts.push(`<div class="math-step" style="color:#0f0">${htmlFrac(finalN, finalD)}</div>`);
+            }
+            container.innerHTML = parts.join('<span class="eq-sign">=</span>');
+        }
+
+        function rnd(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+        function generateUniqueProblem() {
+            let maxTries = 10;
+            let newP;
+            do {
+                let hasMixed = Math.random() > 0.5;
+                let n1_base, d1_base, m1_obj = null;
+                if (hasMixed) {
+                    let w1 = rnd(1, 3);
+                    let num1 = rnd(1, 2);
+                    let den1 = rnd(2, 4);
+                    if(num1 >= den1) den1 = num1 + 1;
+                    m1_obj = { w: w1, n: num1, d: den1 };
+                    n1_base = w1 * den1 + num1;
+                    d1_base = den1;
+                } else {
+                    n1_base = rnd(2, 5); d1_base = rnd(3, 6);
+                    if(n1_base >= d1_base) d1_base = n1_base + 1;
+                }
+                let n2_base = rnd(2, 5); let d2_base = rnd(3, 6);
+                if(n2_base >= d2_base) d2_base = n2_base + 1;
+                if(d1_base === d2_base) d2_base += 1;
+
+                newP = {
+                    m1: m1_obj, m2: null,
+                    n1_orig: m1_obj ? null : n1_base, d1_orig: m1_obj ? null : d1_base,
+                    n2_orig: n2_base, d2_orig: d2_base,
+                    n1: n1_base, d1: d1_base, n2: n2_base, d2: d2_base
+                };
+                let key = `${n1_base}/${d1_base}-${n2_base}/${d2_base}`;
+                let isDup = previousProblems.includes(key);
+                if (!isDup) {
+                    previousProblems.push(key);
+                    if (previousProblems.length > 5) previousProblems.shift();
+                    break;
+                }
+            } while (maxTries-- > 0);
+            return newP;
+        }
+
+        function newProblem() {
+            problem = generateUniqueProblem();
+            isPerfectRun = true;
+            document.getElementById('perfectRunBadge').style.display = 'block';
+            let startPhase = (problem.m1 !== null) ? 0 : 1;
+            solvedSteps = (startPhase === 1) ? 1 : 0;
+            updateMathDisplay(); 
+            resetPhase(startPhase);
+        }
+
+        function resetPhase(phase) {
+            currentPhase = phase;
+            gates = [];
+            smokeParticles = []; 
+            let msg = "";
+            if(phase===0) msg = "مرحله جدید: تبدیل عدد مخلوط";
+            else if(phase===1) msg = "مرحله ۱: مخرج مشترک";
+            else if(phase===2) msg = "مرحله ۲: تقسیم صورت‌ها";
+            else if(phase===3) msg = "مرحله ۳: تبدیل به ضرب";
+            else if(phase===4) msg = "مرحله ۴: جواب نهایی";
+            
+            showOverlay(msg);
+            setTimeout(() => { gates.push(new Gate()); }, 1000);
+            updateHUD();
+            state = 'RUNNING';
+            // پخش مجدد موزیک (دستور اصلاح شده)
+            bgMusic.play().catch(e => console.log("Music Resume Error", e));
+        }
+
+        function showOverlay(text) {
+            const el = document.getElementById('phaseOverlay');
+            el.innerText = text; el.style.opacity = 1;
+            setTimeout(() => { el.style.opacity = 0; }, 2000);
+        }
+
+        function updateHUD() {
+            let totalPhases = (problem.m1) ? 5 : 4;
+            let displayPhase = (problem.m1) ? currentPhase + 1 : currentPhase;
+            document.getElementById('phaseText').innerText = "مرحله: " + displayPhase + "/" + totalPhases;
+            document.getElementById('scoreText').innerText = "امتیاز: " + totalScore;
+        }
+
+        function getGateContent() {
+            const p = problem;
+            let correct, wrong, hint;
+
+            if (currentPhase === 0) {
+                let mixed = p.m1;
+                let corrN = mixed.w * mixed.d + mixed.n;
+                correct = { type: 'simple_frac_op', n1: corrN, d1: mixed.d, n2: p.n2, d2: p.d2, op: '÷', isCorrect: true };
+                wrong = { type: 'simple_frac_op', n1: mixed.w + mixed.n, d1: mixed.d, n2: p.n2, d2: p.d2, op: '÷', isCorrect: false, reason: "برای تبدیل عدد مخلوط به کسر: (عدد صحیح × مخرج) + صورت." };
+                hint = "تبدیل به کسر";
+            } else if (currentPhase === 1) {
+                correct = { type: 'process_denom', n1_txt: `${p.n1}×${p.d2}`, d1_txt: `${p.d1}×${p.d2}`, n2_txt: `${p.n2}×${p.d1}`, d2_txt: `${p.d2}×${p.d1}`, isCorrect: true };
+                wrong = { type: 'process_denom', n1_txt: `${p.n1}×${p.n2}`, d1_txt: `${p.d1}×${p.d2}`, n2_txt: `${p.n2}×${p.n1}`, d2_txt: `${p.d2}×${p.d1}`, isCorrect: false, reason: "اشتباه! برای مخرج مشترک، صورت کسر اول باید در مخرج کسر دوم ضرب شود." };
+                hint = "مخرج مشترک";
+            } else if (currentPhase === 2) {
+                correct = { type: 'big_fraction', top: `${p.n1}×${p.d2}`, bot: `${p.n2}×${p.d1}`, isCorrect: true };
+                wrong = { type: 'big_fraction', top: `${p.n1}×${p.n2}`, bot: `${p.d1}×${p.d2}`, isCorrect: false, reason: "در روش تقسیم کسرها با مخرج مشترک، صورت‌ها را بر هم تقسیم می‌کنیم." };
+                hint = "تقسیم صورت‌ها";
+            } else if (currentPhase === 3) {
+                correct = { type: 'reciprocal_opt', op:'×', n1:p.n1, d1:p.d1, n2:p.d2, d2:p.n2, isCorrect:true };
+                wrong = { type: 'reciprocal_opt', op:'×', n1:p.n1, d1:p.d1, n2:p.n2, d2:p.d2, isCorrect:false, reason: "وقتی تقسیم به ضرب تبدیل می‌شود، کسر دوم باید معکوس شود." };
+                hint = "معکوس کن";
+            } else {
+                let an = p.n1*p.d2, ad = p.d1*p.n2;
+                correct = { type: 'simple', n:an, d:ad, isCorrect:true };
+                wrong = { type: 'simple', n:ad, d:an, isCorrect:false, reason:"جای صورت و مخرج اشتباه شد." };
+                hint = "محاسبه کن";
+            }
+            return { correct, wrong, hint };
+        }
+
+        function drawMath(ctx, data, x, y, size) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.direction = 'ltr'; 
+            let scale = size / 260; 
+            ctx.scale(scale, scale);
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+
+            if (data.type === 'simple') {
+                drawStandardFraction(ctx, data.n, data.d, 0, 0, "#fff", 80);
+            } else if (data.type === 'simple_frac_op') {
+                let gap = 90;
+                drawStandardFraction(ctx, data.n1, data.d1, -gap, 0, "#00bcd4", 60);
+                ctx.font="bold 60px Tahoma"; ctx.fillStyle="#fff"; ctx.fillText(data.op, 0, 0);
+                drawStandardFraction(ctx, data.n2, data.d2, gap, 0, "#fff", 60);
+            } else if (data.type === 'reciprocal_opt') {
+                let gap = 75;
+                drawStandardFraction(ctx, data.n1, data.d1, -gap, -20, "#eee", 60);
+                ctx.font="bold 60px Tahoma"; ctx.fillStyle="#0ff"; ctx.fillText(data.op, 0, -20);
+                drawStandardFraction(ctx, data.n2, data.d2, gap, -20, "#eee", 60);
+            } else if (data.type === 'big_fraction') {
+                drawTextFraction(ctx, data.top, data.bot, 0, 0, "#fff");
+            } else if (data.type === 'process_denom') {
+                let x1 = -80, x2 = 80;
+                drawTextFraction(ctx, data.n1_txt, data.d1_txt, x1, 0, "#fff", 35);
+                ctx.font="bold 50px Tahoma"; ctx.fillStyle="#aaa"; ctx.fillText("÷", 0, 0);
+                drawTextFraction(ctx, data.n2_txt, data.d2_txt, x2, 0, "#fff", 35);
+                ctx.save();
+                ctx.shadowColor = "#0f0"; ctx.shadowBlur = 15;
+                ctx.strokeStyle = "#0f0"; ctx.lineWidth = 3;
+                ctx.beginPath();
+                if(ctx.roundRect) ctx.roundRect(-130, 20, 260, 50, 15);
+                else ctx.rect(-130, 20, 260, 50);
+                ctx.stroke();
+                ctx.restore();
+            }
+            ctx.restore();
+        }
+
+        function drawTextFraction(ctx, topText, botText, x, y, color, fontSize=45) {
+            ctx.fillStyle = color;
+            ctx.font = `bold ${fontSize}px Tahoma`;
+            ctx.fillText(topText, x, y - fontSize*0.8);
+            let len = Math.max(topText.length, botText.length) * (fontSize * 0.6);
+            ctx.beginPath(); ctx.lineWidth=3; ctx.strokeStyle=color;
+            ctx.moveTo(x - len/2, y); ctx.lineTo(x + len/2, y); ctx.stroke();
+            ctx.fillText(botText, x, y + fontSize);
+        }
+
+        function drawStandardFraction(ctx, n, d, x, y, color, fontSize) {
+            drawTextFraction(ctx, String(n), String(d), x, y, color, fontSize);
+        }
+
+        class SmokeParticle {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * 5 + 3;
+                this.speedY = Math.random() * 2 + 1;
+                this.speedX = (Math.random() - 0.5) * 1.5;
+                this.life = 1.0; this.color = `rgba(150, 150, 150,`;
+            }
+            update() {
+                this.y -= this.speedY; this.x += this.speedX;
+                this.size += 0.3; this.life -= 0.02; 
+            }
+            draw(ctx) {
+                if(this.life <= 0) return;
+                ctx.beginPath(); ctx.fillStyle = this.color + this.life + ")";
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
+            }
+        }
+
+        function drawTractor(ctx) {
+            const s = 0.8; ctx.scale(s, s);
+            ctx.fillStyle = "#d32f2f";
+            ctx.beginPath();
+            ctx.roundRect(-40, -30, 50, 40, 5); ctx.roundRect(10, -50, 40, 60, 5);
+            ctx.fill(); ctx.stroke();
+
+            ctx.fillStyle = "#333";
+            for(let i=0; i<3; i++) ctx.fillRect(-35, -20 + (i*10), 40, 4);
+
+            ctx.fillStyle = "#555"; ctx.fillRect(-25, -55, 8, 25);
+            ctx.beginPath(); ctx.moveTo(-29, -55); ctx.lineTo(-21, -55); ctx.lineTo(-21, -60); ctx.lineTo(-29, -60);
+            ctx.fill();
+
+            ctx.fillStyle = "#222";
+            ctx.beginPath(); ctx.arc(35, 15, 25, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#d32f2f";
+            ctx.beginPath(); ctx.arc(35, 15, 10, 0, Math.PI * 2); ctx.fill();
+
+            ctx.fillStyle = "#222";
+            ctx.beginPath(); ctx.arc(-25, 20, 15, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#d32f2f";
+            ctx.beginPath(); ctx.arc(-25, 20, 6, 0, Math.PI * 2); ctx.fill();
+
+            ctx.strokeStyle = "#111"; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(20, -30); ctx.lineTo(10, -40); ctx.stroke();
+            
+            ctx.fillStyle = "#ffeb3b"; ctx.beginPath(); ctx.arc(-38, -10, 5, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#fff";
+            ctx.beginPath(); ctx.arc(-30, -5, 4, 0, Math.PI*2); ctx.fill(); 
+            ctx.beginPath(); ctx.arc(-15, -5, 4, 0, Math.PI*2); ctx.fill(); 
+            ctx.fillStyle = "#000";
+            ctx.beginPath(); ctx.arc(-30, -5, 1.5, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(-15, -5, 1.5, 0, Math.PI*2); ctx.fill();
+            ctx.scale(1/s, 1/s);
+        }
+
+        class Gate {
+            constructor() {
+                this.z = 1600;
+                const c = getGateContent();
+                this.opts = [c.correct, c.wrong].sort(() => Math.random() - 0.5);
+                this.hint = c.hint;
+                this.passed = false;
+            }
+            update() { if(state==='RUNNING') this.z -= speed; }
+            draw() {
+                if(this.z < 10) return;
+                let scale = 400 / (400 + this.z);
+                let y = height/2 + 50*scale; 
+                let roadWidthAtZ = width * scale;
+                let centerOffset = roadWidthAtZ * 0.25; 
+                let cx = width / 2;
+                let xPositions = [cx - centerOffset, cx + centerOffset];
+                let safeGap = 20 * scale; 
+                let maxBoxWidth = (roadWidthAtZ / 2) - safeGap;
+                let boxHeight = maxBoxWidth * 0.75; 
+
+                for(let i=0; i<2; i++) {
+                    let optX = xPositions[i];
+                    ctx.fillStyle = "rgba(10,20,40,0.95)"; 
+                    ctx.strokeStyle = (i===playerLane && this.z<600) ? "#ffeb3b" : "#555";
+                    if(this.z>600) ctx.strokeStyle = "#0ff";
+                    
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    if(ctx.roundRect) ctx.roundRect(optX - maxBoxWidth/2, y - boxHeight/2, maxBoxWidth, boxHeight, 10);
+                    else ctx.rect(optX - maxBoxWidth/2, y - boxHeight/2, maxBoxWidth, boxHeight);
+                    ctx.fill(); ctx.stroke();
+                    drawMath(ctx, this.opts[i], optX, y, maxBoxWidth);
+                }
+                
+                if(this.z < 1200 && this.z > 300) {
+                    ctx.fillStyle="#ffeb3b"; ctx.font=`bold ${20*scale + 12}px Tahoma`; 
+                    ctx.textAlign="center"; ctx.fillText(this.hint, width/2, y - boxHeight);
+                }
+            }
+        }
+
+        function loop() {
+            if(state==='RUNNING') {
+                let targetX = (playerLane === 0) ? -width/4 : width/4;
+                playerX += (targetX - playerX) * 0.15;
+                if(Math.random() < 0.4) { 
+                    let px = (width/2) + playerX - 20; let py = (height - 120) - 50; 
+                    smokeParticles.push(new SmokeParticle(px, py));
+                }
+                if(gates.length > 0) {
+                    let g = gates[0]; g.update();
+                    if(g.z < 50 && !g.passed) {
+                        g.passed = true;
+                        let choice = g.opts[playerLane];
+                        if(choice.isCorrect) handleSuccess(); else handleFail(choice);
+                    }
+                    if(g.z < -400) gates.shift();
+                }
+            }
+            
+            for(let i = smokeParticles.length - 1; i >= 0; i--) {
+                smokeParticles[i].update();
+                if(smokeParticles[i].life <= 0) smokeParticles.splice(i, 1);
+            }
+
+            drawScene();
+            requestAnimationFrame(loop);
+        }
+
+        function drawScene() {
+            ctx.fillStyle = "#050510"; ctx.fillRect(0,0,width,height);
+            let cx = width/2; let cy = height/2;
+            
+            ctx.strokeStyle = "rgba(255,255,255,0.1)"; ctx.lineWidth=2;
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, height); ctx.stroke();
+            
+            ctx.strokeStyle = "rgba(0,255,255,0.3)"; ctx.lineWidth=3;
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(0, height); ctx.stroke(); 
+            ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(width, height); ctx.stroke(); 
+
+            if(gates[0]) gates[0].draw();
+
+            let px = cx + playerX; let py = height - 120;
+            ctx.save(); ctx.translate(px, py); drawTractor(ctx); ctx.restore();
+
+            for(let p of smokeParticles) p.draw(ctx);
+        }
+
+        function handleSuccess() {
+            solvedSteps = (currentPhase === 0) ? 1 : currentPhase + 1;
+            if(currentPhase === 0) {
+                currentPhase = 1; resetPhase(currentPhase); updateMathDisplay();
+            } else if(currentPhase < 4) {
+                currentPhase++; resetPhase(currentPhase); updateMathDisplay();
+            } else {
+                solvedSteps = 5; updateMathDisplay(); endLevel(true);
+            }
+        }
+
+        function handleFail(wrongOpt) {
+            state = 'PAUSED'; 
+            if(bgMusic.src) { bgMusic.pause(); bgMusic.currentTime = 0; }
+            isPerfectRun = false; 
+            document.getElementById('perfectRunBadge').style.display = 'none';
+            document.getElementById('errorExplanation').innerText = wrongOpt.reason;
+            document.getElementById('analysisModal').style.display = 'flex';
+        }
+
+        function renderFinalChain() {
+            const p = problem;
+            let html = "";
+            let arrow = '<span class="sum-arrow">❮</span>'; 
+            if(p.m1) {
+                html += `<div class="sum-step step-clr-0">${htmlMixed(p.m1.w, p.m1.n, p.m1.d, "step-clr-0")} <span class="operator">÷</span> ${htmlFrac(p.n2, p.d2, "step-clr-0")}</div>`;
+                html += arrow;
+                html += `<div class="sum-step step-clr-1">${htmlFrac(p.n1, p.d1, "step-clr-1")} <span class="operator">÷</span> ${htmlFrac(p.n2, p.d2, "step-clr-1")}</div>`;
+            } else {
+                html += `<div class="sum-step step-clr-1">${htmlFrac(p.n1, p.d1, "step-clr-1")} <span class="operator">÷</span> ${htmlFrac(p.n2, p.d2, "step-clr-1")}</div>`;
+            }
+            html += arrow;
+            html += `<div class="sum-step step-clr-2">${htmlFrac(p.n1+'×'+p.d2, p.d1+'×'+p.d2, "step-clr-2")} <span class="operator">÷</span> ${htmlFrac(p.n2+'×'+p.d1, p.d2+'×'+p.d1, "step-clr-2")}</div>`;
+            html += arrow;
+            html += `<div class="sum-step step-clr-3">${htmlFrac(p.n1+'×'+p.d2, p.n2+'×'+p.d1, "step-clr-3")}</div>`;
+            html += arrow;
+            html += `<div class="sum-step step-clr-3" style="border:1px solid #d500f9;">${htmlFrac(p.n1, p.d1, "step-clr-3")} <span class="operator">×</span> ${htmlFrac(p.d2, p.n2, "step-clr-3")}</div>`;
+            html += arrow;
+            let finalN = p.n1 * p.d2; let finalD = p.d1 * p.n2;
+            html += `<div class="sum-step step-clr-4">${htmlFrac(finalN, finalD, "step-clr-4")}</div>`;
+            document.getElementById('finalSummary').innerHTML = html;
+        }
+
+        function endLevel(success) {
+            state = 'PAUSED';
+            if(bgMusic.src) { bgMusic.pause(); bgMusic.currentTime = 0; }
+            let msg = isPerfectRun ? "<span style='color:#0f0'>+۱۰ امتیاز (بدون اشتباه)</span>" : "<span style='color:#f00'>بدون امتیاز (خطا داشتید)</span>";
+            if(isPerfectRun) totalScore += 10;
+            renderFinalChain();
+            document.getElementById('finalScoreDisplay').innerHTML = msg + "<br>امتیاز کل: " + totalScore;
+            document.getElementById('levelCompleteModal').style.display = 'flex';
+        }
+
+        window.nextLevel = function() {
+            document.getElementById('levelCompleteModal').style.display = 'none';
+            newProblem();
+        }
+        window.retryProblem = function() {
+            document.getElementById('analysisModal').style.display = 'none';
+            resetPhase(currentPhase);
+        }
+
+        function setLane(l) { if(state === 'RUNNING') playerLane = l; }
+        
+        // Touch events
+        document.getElementById('btnLeft').addEventListener('touchstart', (e)=>{e.preventDefault(); setLane(0)}, {passive:false});
+        document.getElementById('btnRight').addEventListener('touchstart', (e)=>{e.preventDefault(); setLane(1)}, {passive:false});
+        document.getElementById('btnLeft').addEventListener('mousedown', ()=>setLane(0));
+        document.getElementById('btnRight').addEventListener('mousedown', ()=>setLane(1));
+
+        // Keyboard events
+        window.addEventListener('keydown', (e) => {
+            if(state !== 'RUNNING') return;
+            if(e.key === "ArrowLeft") setLane(0);
+            if(e.key === "ArrowRight") setLane(1);
+        });
+
+        loop();
+    </script>
+</body>
+</html>
