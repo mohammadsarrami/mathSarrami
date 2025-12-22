@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آزمون جامع هوش و منطق | استاد محمد</title>
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    <style>
+        :root {
+            --primary: #1a237e; /* سرمه‌ای سیر */
+            --secondary: #283593;
+            --accent: #ff6f00; /* نارنجی پررنگ */
+            --bg: #eceff1;
+            --card-bg: #ffffff;
+            --text: #37474f;
+            --focus-border: #00c853;
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none; /* جلوگیری از کپی متن در حالت آزمون */
+        }
+
+        /* --- هدر --- */
+        header {
+            background: linear-gradient(to left, var(--secondary), var(--primary));
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 100;
+            height: 60px;
+        }
+
+        .header-info h1 { margin: 0; font-size: 1.2rem; }
+        .header-info span { font-size: 0.8rem; opacity: 0.8; color: #fff8e1; }
+
+        .timer-box {
+            background: #000;
+            color: #00e676;
+            font-family: monospace;
+            font-size: 1.5rem;
+            padding: 5px 15px;
+            border-radius: 5px;
+            border: 2px solid #555;
+            box-shadow: 0 0 10px rgba(0, 230, 118, 0.2);
+        }
+        .timer-box.warning { color: #ff1744; animation: pulse 1s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+        .header-tools button {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.4);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-right: 10px;
+            transition: 0.3s;
+            font-family: inherit;
+            font-size: 0.9rem;
+        }
+        .header-tools button:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+        .header-tools button.active-mode { background: var(--focus-border); color: #000; font-weight: bold; border-color: var(--focus-border); }
+
+        /* --- صفحه شروع --- */
+        #start-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--primary);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+        #start-screen h1 { font-size: 2.5rem; margin-bottom: 10px; }
+        #start-screen p { font-size: 1.2rem; margin-bottom: 30px; opacity: 0.9; }
+        .btn-start {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-family: 'Vazirmatn', sans-serif;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+        .btn-start:hover { transform: scale(1.05); background: #ff8f00; }
+
+        /* --- محیط سوال --- */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+            display: none; /* در ابتدا مخفی */
+        }
+
+        .card {
+            background: var(--card-bg);
+            width: 95%;
+            max-width: 900px;
+            height: 80vh;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border-right: 8px solid var(--accent);
+        }
+
+        .card-body {
+            padding: 25px 40px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        /* استایل محتوای سوال */
+        .q-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .q-badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .q-context {
+            background: #fff3e0;
+            border: 1px solid #ffe0b2;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            color: #5d4037;
+            font-size: 0.95rem;
+            line-height: 1.8;
+            text-align: justify;
+            position: relative;
+        }
+        .q-context::before {
+            content: "💡 راهنما / داستان:";
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--accent);
+        }
+
+        .q-text {
+            font-size: 1.2rem;
+            font-weight: 800;
+            margin-bottom: 25px;
+            line-height: 1.7;
+            color: #212121;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            font-size: 1rem;
+            color: #455a64;
+        }
+        .option:hover { background: #e8eaf6; border-color: #c5cae9; }
+        .option.selected {
+            background: #e8eaf6;
+            border-color: var(--primary);
+            color: var(--primary);
+            font-weight: bold;
+        }
+        .opt-num {
+            background: #cfd8dc;
+            color: #455a64;
+            width: 25px; height: 25px;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin-left: 10px;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+        .option.selected .opt-num { background: var(--primary); color: white; }
+
+        /* --- فوتر ناوبری --- */
+        .nav-area {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e0e0e0;
+            display: none; /* در ابتدا مخفی */
+        }
+
+        .nav-btn {
+            background: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 10px 25px;
+            font-size: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .nav-btn:hover { background: var(--primary); color: white; }
+        .nav-btn:disabled { border-color: #ccc; color: #ccc; background: white; cursor: not-allowed; }
+
+        /* --- کادر تمرکز --- */
+        #focus-overlay {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 700px; height: 300px;
+            border: 4px solid var(--focus-border);
+            z-index: 1500;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85); /* تاریک کردن کل صفحه */
+            border-radius: 8px;
+            cursor: move;
+        }
+
+        @media (max-width: 768px) {
+            .options-grid { grid-template-columns: 1fr; }
+            .card { height: 75vh; }
+            .timer-box { font-size: 1.1rem; padding: 5px 10px; }
+            #start-screen h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- صفحه شروع -->
+    <div id="start-screen">
+        <h1>آزمون هوش و خلاقیت</h1>
+        <p>تعداد سوالات: ۲۱ | مدت زمان: ۲۰ دقیقه</p>
+        <p style="font-size: 0.9rem; margin-top:-10px; color:#ffd54f">توجه: زمان آزمون قابل توقف نیست.</p>
+        <button class="btn-start" onclick="startExam()">شروع آزمون</button>
+    </div>
+
+    <header>
+        <div class="header-info">
+            <h1>استاد محمد</h1>
+            <span>کلاس خلاقیت و ریاضی</span>
+        </div>
+        
+        <div class="timer-box" id="timer">20:00</div>
+
+        <div class="header-tools">
+            <button onclick="toggleFocus()" id="btn-focus">🎯 تمرکز</button>
+        </div>
+    </header>
+
+    <main id="main-content">
+        <div class="card">
+            <div class="card-body" id="question-container">
+                <!-- محتوا توسط جاوااسکریپت پر می‌شود -->
+            </div>
+        </div>
+    </main>
+
+    <div class="nav-area" id="nav-footer">
+        <button class="nav-btn" id="prev-btn" onclick="changeSlide(-1)">قبلی</button>
+        <div style="font-weight:bold; color:var(--text)">
+            سوال <span id="curr-page">1</span> از 21
+        </div>
+        <button class="nav-btn" id="next-btn" onclick="changeSlide(1)">بعدی</button>
+    </div>
+
+    <!-- ابزار تمرکز -->
+    <div id="focus-overlay"></div>
+
+    <script>
+        // بانک سوالات کامل (۲۱ آیتم - سوال ۵ دو بخشی است)
+        const questions = [
+            {
+                id: 1,
+                text: "دختر خاله‌ی عمه‌ی من چه نسبتی با مادر من دارد؟",
+                options: ["دختر خاله شوهرم", "دخترِ خواهرزاده", "خواهرزاده", "برادرزاده"]
+            },
+            {
+                id: 2,
+                text: "دخترِ پسرِ مادرِ خاله‌ی من را در نظر بگیرید. من چه نسبتی با این دختر دارم؟",
+                options: ["جاری", "پسرعمه", "پسرعمو", "باجناق"]
+            },
+            {
+                id: 3,
+                text: "پسرِ پدرِ مادرِ خواهرِ مریم با او چه نسبتی دارد؟",
+                options: ["دایی", "پدر", "برادر", "عمو"]
+            },
+            {
+                id: 4,
+                text: "پسرِ خواهرِ مادرِ عمه‌ی روژین، چه نسبتی با پدر او دارد؟",
+                options: ["پسرعمه", "برادرزاده", "پسرخاله", "خواهرزاده"]
+            },
+            // سوال ۵ - قسمت الف
+            {
+                id: "5-الف",
+                context: "حسن، برادرِ ژاله بوده و نگار خواهرزاده‌ی حسن است. روزی نگار با عمویش بهرام به مدرسه رفتند. علی‌آقا را به همراه پسری دیدند و احوال‌پرسی کردند. بهرام اسم پسر را پرسید. علی‌آقا پاسخ داد که ایشان، سینا هستند و من تنها عموی ایشان هستم. اگر علی برادر حسن باشد، به سؤالات زیر پاسخ دهید.",
+                text: "قسمت الف) بهرام چه نسبتی با علی دارد؟",
+                options: ["برادرِ زنِ برادر", "برادرزاده", "برادرِ شوهرِ خواهر", "پسرِ خواهر"]
+            },
+            // سوال ۵ - قسمت ب
+            {
+                id: "5-ب",
+                context: "حسن، برادرِ ژاله بوده و نگار خواهرزاده‌ی حسن است... (ادامه داستان قبل)",
+                text: "قسمت ب) سینا چه نسبتی با نگار دارد؟",
+                options: ["دایی", "برادر", "پسرعمو", "پسرعمه"]
+            },
+            {
+                id: 6,
+                context: "منظور از خانواده بزرگ، خانواده‌ای است که شامل پدر و مادر و دو نسل بعد از آن‌ها است (فرزندان و نوه‌ها).",
+                text: "در یک خانواده بزرگ، چند نسبت فامیلی و مشابه بین علی و رضا می‌تواند وجود داشته باشد؟ مثلاً اگر رضا برادر علی باشد، علی نیز برادر رضا است.",
+                options: ["۱", "۲", "۳", "بیش از ۴ تا"]
+            },
+            {
+                id: 7,
+                text: "پسر برادر شوهر خواهر مادر دختر خواهر دختر مادر مادر من، چه نسبتی با من دارد به شرط آن که بدانیم شوهر خاله من تک پسر است؟",
+                options: ["برادرزاده", "دایی", "پسرعمو", "برادر"]
+            },
+            {
+                id: 8,
+                text: "اگر ندا نوه خاله علی و حسین پسر دایی علی باشد در این صورت مادر ندا چه نسبتی با برادر حسین دارد؟ (خاله علی فرزند پسر ندارد.)",
+                options: ["خاله", "عمه", "دختر عمه", "دختر دایی"]
+            },
+            {
+                id: 9,
+                context: "چهار نفر دوست به نام‌های «الف، ب، ج، ت» در حال صحبت باهم هستند که یکی از آن‌ها دختر است و سه‌تا از آن‌ها راستگو و یکی دروغگو است.<br>الف: من دختر نیستم و «ب» هم دختر نیست.<br>ب: من دختر نیستم و «ج» دختر است.<br>ج: من دختر نیستم و «ب» دختر است.<br>ت: من دختر نیستم و «الف» دختر نیست.",
+                text: "حال دختر کیست؟",
+                options: ["الف", "ب", "ج", "ت"]
+            },
+            {
+                id: 10,
+                context: "تعدادی دختر و پسر در یک پارک مشغول بازی هستند و حداقل یکی از پسرها و یکی از دخترها دروغگو هستند ولی همه آن‌ها دروغگو نیستند.<br>از پسرها پرسیدیم، چند نفر دختر در میان شماست؟ به جز سه پسر که عدد ۴ را گفتند، بقیه پسرها عدد ۲ را گفتند.<br>از دخترها پرسیدیم، چند نفر پسر در میان شماست؟ به جز دو دختر که عدد ۳ را گفتند، بقیه دخترها عدد ۵ را گفتند.",
+                text: "مجموع تعداد دختران و پسران که مشغول بازی هستند چند نفر است؟",
+                options: ["۷", "۸", "۹", "۲"]
+            },
+            {
+                id: 11,
+                text: "مریم تعدادی برادرزاده و خواهرزاده دارد و اگر از هر خواهرزاده مریم بپرسیم چند دایی دارد؟ می‌گوید ۲ تا و اگر از هر برادرزاده مریم بپرسیم چند عمه دارد، می‌گوید ۲ تا. تعیین کنید مریم چند خواهر و برادر می‌تواند داشته باشد؟",
+                options: ["دو خواهر و یک برادر", "دو خواهر و دو برادر", "سه خواهر و سه برادر", "یک خواهر و دو برادر"]
+            },
+            {
+                id: 12,
+                context: "«A»، پسردایی «B» است و «C»، دخترعموی «F» است. همچنین «B»، پسرخاله‌ی «T» است و «F»، پسرعموی «A» است. همچنین «C» دو پسر عمو دارد که هیچ‌کدام خواهر و برادری ندارند.",
+                text: "کدام گزینه حتماً صحیح است؟ (توجه: هیچ‌کدام از اسامی، خواهر و برادر نیستند.)",
+                options: ["«F»، پسرعمه‌ی «T» هست.", "«T»، پسرعمه‌ی «C» هست.", "«T»، دخترعمه‌ی «B» هست.", "«C»، دختردایی «T» هست."]
+            },
+            // شروع سوالات شخص الف
+            {
+                id: 13,
+                context: "شخص «الف»، دو برادر و دو خواهر به نام‌های «ب»، «س»، «ف» و «ل» دارد. همچنین شخص «الف» دو برادرزاده و دو خواهرزاده دارد که فرزند «س» به فرزند «ب»، دخترخاله می‌گوید و فرزند «ف» به فرزند «ل»، پسرعمو می‌گوید.",
+                text: "اگر «ل»، فقط یک برادر داشته باشد، کدام جمله زیر صحیح است؟",
+                options: ["«الف» برادرِ «ب» است.", "«الف» دایی فرزند «ف» است.", "«الف» خاله فرزند «ل» است.", "«الف» خواهر «س» است."]
+            },
+            {
+                id: 14,
+                context: "شخص «الف»، دو برادر و دو خواهر به نام‌های «ب»، «س»، «ف» و «ل» دارد... (متن والد)",
+                text: "اگر «ب»، یک خواهرزاده و چهار برادرزاده داشته باشد، «الف» چند فرزند دارد؟",
+                options: ["۲", "صفر", "۱", "نمی‌توان تعیین کرد"]
+            },
+            {
+                id: 15,
+                context: "شخص «الف»، دو برادر و دو خواهر به نام‌های «ب»، «س»، «ف» و «ل» دارد... (متن والد)",
+                text: "اگر فرزند «ف» یک دخترعمه و دو پسرعمو داشته باشد، کدام جمله زیر حتماً صحیح است؟",
+                options: ["فرزند «ب» جنسیت پسر دارد.", "فرزند «س» جنسیت پسر دارد.", "«الف»، خاله فرزند «ل» است.", "«الف» دو پسر دارد."]
+            },
+            {
+                id: 16,
+                context: "تعدادی دختر و پسر در حال صحبت باهم هستند. پسرها روزهای شنبه تا دوشنبه راستگو و بقیه روزهای هفته دروغگو هستند و دخترها یکشنبه تا چهارشنبه راستگو و بقیه روزهای هفته دروغگو هستند.",
+                text: "کدام عبارت را می‌توان نتیجه گرفت؟",
+                options: ["پسرها در روز سه‌شنبه می‌گویند: دخترها در روز چهارشنبه راستگو هستند.", "دخترها در روز شنبه می‌گویند: پسرها در روز دوشنبه راستگو نیستند.", "پسرها در روز یک‌شنبه می‌گویند: دخترها در روز پنج‌شنبه دروغگو نیستند.", "دخترها در روز دوشنبه می‌گویند: پسرها در روز یک‌شنبه دروغگو هستند."]
+            },
+            {
+                id: 17,
+                text: "در شهری ۹۰ نفر وجود دارند که ۵۴ نفر راستگو هستند و همیشه راست می‌گویند و بقیه دروغگو هستند... این نفرات به گروه‌های دو نفری تقسیم شده‌اند. ۵۸ نفر گفتند «هم‌گروهیتان راستگو هست؟» بله گفتند. چند گروه وجود دارد که هر دو نفر راستگو باشند؟",
+                options: ["۲۱", "۱۹", "۱۶", "۱۰"]
+            },
+            {
+                id: 18,
+                context: "گروهی ۲۵ نفره داریم (راستگو، دروغگو، دودل). از هرکدام پرسیدیم «آیا تو راستگو هستی؟» ۱۷ نفر گفتند: «بله». سپس پرسیدیم: «آیا تو دودل هستی؟» ۱۲ نفر گفتند: «بله». سپس پرسیدیم: «آیا تو دروغگو هستی؟» ۸ نفر گفتند: «بله».",
+                text: "چند نفر از آن‌ها راستگو هستند؟",
+                options: ["۴", "۵", "۹", "۱۳"]
+            },
+            {
+                id: 19,
+                context: "اگر «نمی‌دانم» و «می‌توانم» هرکدام یک‌بار این جمله را بگویند: «من “نمی‌دانم” هستم و “می‌توانم” نیستم.»<br>گزاره الف: «نمی‌دانم» یک فرد دروغگو است.<br>گزاره ب: «می‌توانم» یک فرد راستگو است.",
+                text: "کدام گزاره را می‌توان نتیجه گرفت؟",
+                options: ["گزاره الف", "گزاره ب", "گزاره الف و ب", "هیچ‌کدام"]
+            },
+            {
+                id: 20,
+                context: "اگر «نمی‌دانم» برادر «نمی‌توانم» باشد و «می‌توانم» خواهر «می‌دانم» باشد و در صف، دخترها کنارهم و پسرها هم کنارهم قرار نداشته باشند و همچنین افرادی که باهم نسبت برادری و خواهری دارند کنار هم قرار ندارند.",
+                text: "کدام جمله زیر را می‌توان حتماً نتیجه گرفت؟",
+                options: ["«نمی‌توانم» برادر «نمی‌دانم» است.", "«نمی‌توانم» باید در صف کنار «می‌توانم» قرار بگیرد.", "«نمی‌توانم» خواهر «نمی‌دانم» است.", "«می‌دانم» باید در صف، کنار «نمی‌دانم» قرار بگیرد."]
+            }
+        ];
+
+        let currentIndex = 0;
+        let timeLeft = 20 * 60; // 20 minutes in seconds
+        let timerInterval;
+
+        function startExam() {
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('main-content').style.display = 'flex';
+            document.getElementById('nav-footer').style.display = 'flex';
+            loadQuestion(0);
+            
+            // Start Timer
+            timerInterval = setInterval(() => {
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishExam();
+                } else {
+                    timeLeft--;
+                    updateTimerUI();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const s = (timeLeft % 60).toString().padStart(2, '0');
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `${m}:${s}`;
+            
+            if (timeLeft < 60) {
+                timerEl.classList.add('warning');
+            }
+        }
+
+        function finishExam() {
+            alert('زمان آزمون به پایان رسید!');
+            document.getElementById('main-content').style.opacity = '0.5';
+            document.querySelectorAll('button').forEach(b => b.disabled = true);
+        }
+
+        function loadQuestion(index) {
+            const data = questions[index];
+            const container = document.getElementById('question-container');
+            
+            let contextHtml = data.context ? `<div class="q-context">${data.context}</div>` : '';
+            
+            let optionsHtml = '';
+            data.options.forEach((opt, i) => {
+                optionsHtml += `
+                    <div class="option" onclick="selectOption(this)">
+                        <span class="opt-num">${i+1}</span>
+                        ${opt}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="q-header">
+                    <span class="q-badge">سوال ${data.id}</span>
+                </div>
+                ${contextHtml}
+                <div class="q-text">${data.text}</div>
+                <div class="options-grid">${optionsHtml}</div>
+            `;
+
+            document.getElementById('curr-page').textContent = index + 1;
+            document.getElementById('prev-btn').disabled = (index === 0);
+            document.getElementById('next-btn').disabled = (index === questions.length - 1);
+        }
+
+        function changeSlide(dir) {
+            if (dir === 1 && currentIndex < questions.length - 1) {
+                currentIndex++;
+                loadQuestion(currentIndex);
+            } else if (dir === -1 && currentIndex > 0) {
+                currentIndex--;
+                loadQuestion(currentIndex);
+            }
+        }
+
+        function selectOption(el) {
+            // Clear previous selection
+            document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+            // Select new
+            el.classList.add('selected');
+        }
+
+        // Focus Mode Logic (Draggable Overlay)
+        const focusOverlay = document.getElementById("focus-overlay");
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        focusOverlay.addEventListener("mousedown", dragStart);
+        document.addEventListener("mouseup", dragEnd);
+        document.addEventListener("mousemove", drag);
+
+        function dragStart(e) {
+            initialX = e.clientX - xOffset;
+            initialY = e.clientY - yOffset;
+            if (e.target === focusOverlay) {
+                isDragging = true;
+            }
+        }
+
+        function dragEnd(e) {
+            initialX = currentX;
+            initialY = currentY;
+            isDragging = false;
+        }
+
+        function drag(e) {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                xOffset = currentX;
+                yOffset = currentY;
+                setTranslate(currentX, currentY, focusOverlay);
+            }
+        }
+
+        function setTranslate(xPos, yPos, el) {
+            el.style.transform = `translate(${xPos - 350}px, ${yPos - 150}px)`; // Adjust for center offset
+        }
+
+        function toggleFocus() {
+            const btn = document.getElementById('btn-focus');
+            if (focusOverlay.style.display === 'block') {
+                focusOverlay.style.display = 'none';
+                btn.classList.remove('active-mode');
+            } else {
+                focusOverlay.style.display = 'block';
+                btn.classList.add('active-mode');
+            }
+        }
+    </script>
+</body>
+</html>
