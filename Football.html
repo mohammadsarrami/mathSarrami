@@ -268,7 +268,7 @@ let gameState = {
     totalScore: 0,
     stage: 0, 
     isPerfectRun: true,
-    timeRemaining: 120,
+    timeRemaining: 350,
     timerInterval: null,
     questionData: null,
     shootPhase: 0,
@@ -336,8 +336,8 @@ function nextRound() {
     gameState.questionData.userDenAns = null;
     
     clearInterval(gameState.timerInterval);
-    gameState.timeRemaining = 120;
-    uiTimer.innerText = 120;
+    gameState.timeRemaining = 350;
+    uiTimer.innerText = 350;
     uiProgressBar.style.transform = `scaleX(1)`;
     gameState.timerInterval = setInterval(updateTimer, 1000);
     
