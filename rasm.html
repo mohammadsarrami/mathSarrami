@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آموزش کسر - بدون ساده‌سازی</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700;900&display=swap');
+
+        :root {
+            --primary: #2980b9;
+            --secondary: #27ae60;
+            --accent: #e74c3c;
+            --bg: #ecf0f1;
+            
+            --border-vertical: #2980b9; 
+            --border-horizontal: #c0392b; 
+            --border-grid: #bdc3c7;      
+        }
+
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            padding: 25px;
+            border: 4px solid #95a5a6;
+        }
+
+        /* هدر */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .jump-controls {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f0f3f4;
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        .jump-controls input {
+            width: 50px;
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        .btn-jump {
+            background: #7f8c8d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        /* ناحیه سوال */
+        .question-area {
+            font-size: 1.3em;
+            line-height: 2.4;
+            margin-bottom: 20px;
+            text-align: justify;
+            background: #f9f9f9;
+            padding: 15px;
+            border-right: 5px solid var(--primary);
+            border-radius: 5px;
+        }
+
+        /* استایل کسرها (شبیه لاتک) */
+        .math-frac {
+            direction: ltr;
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            font-family: 'Times New Roman', serif;
+            font-weight: bold;
+            margin: 0 4px;
+            font-size: 1.1em;
+        }
+        .math-frac .top {
+            border-bottom: 2px solid #000;
+            padding: 0 3px;
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+        .math-frac .bottom {
+            padding: 0 3px;
+            display: block;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* دکمه‌ها */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .main-input {
+            padding: 10px;
+            font-size: 1.2em;
+            width: 120px;
+            text-align: center;
+            border: 2px solid #95a5a6;
+            border-radius: 10px;
+            font-family: 'Vazirmatn';
+            font-weight: bold;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: 'Vazirmatn';
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+        .btn-check { background: var(--primary); color: white; box-shadow: 0 4px 0 #1a5276; }
+        .btn-next { background: var(--secondary); color: white; box-shadow: 0 4px 0 #1e8449; display: none; }
+        .btn-replay { background: #f39c12; color: white; box-shadow: 0 4px 0 #d35400; display: none; }
+        button:active { transform: translateY(4px); box-shadow: none; }
+
+        /* --- استایل‌های شبکه --- */
+        .visual-container {
+            background: #fff;
+            border: 4px solid #333;
+            border-radius: 4px;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 600px;
+            height: 350px;
+            position: relative;
+            display: grid;
+            transition: all 1s ease;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .cell {
+            border-right: 1px solid var(--border-grid);
+            border-bottom: 1px solid var(--border-grid);
+            border-style: solid !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1em;
+            font-weight: bold;
+            color: #333;
+            transition: background-color 0.8s ease;
+            position: relative;
+            box-sizing: border-box;
+        }
+        
+        .cell.v-border { border-right: 3px solid var(--border-vertical) !important; }
+        .cell.h-border { border-bottom: 3px solid var(--border-horizontal) !important; }
+
+        .bg-col1 { background-color: #f1c40f; }
+        .bg-col2 { background-color: #2ecc71; }
+        .bg-blue { background-color: #3498db; color: white; }
+        .bg-final { background-color: #9b59b6; color: white; }
+
+        .info-box {
+            background: #fff8e1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #f1c40f;
+            text-align: center;
+            min-height: 40px;
+            margin-top: 10px;
+            font-weight: bold;
+            color: #d35400;
+        }
+
+        /* کادر محاسبات نهایی */
+        .final-calc {
+            text-align: right; 
+            background: #2c3e50;
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            display: none;
+            line-height: 1.8;
+        }
+        
+        .math-ltr {
+            direction: ltr;
+            unicode-bidi: embed;
+            display: inline-flex;
+            align-items: center;
+            font-family: 'Times New Roman', serif; /* فونت ریاضی */
+            font-weight: bold;
+            color: #f1c40f;
+            margin: 0 5px;
+            font-size: 1.2em;
+        }
+        
+        /* کسر کوچک داخل فرمول‌ها */
+        .math-ltr .math-frac {
+            font-size: 1em; 
+            color: #f1c40f;
+            margin: 0 2px;
+        }
+        .math-ltr .math-frac .top { border-color: #f1c40f; }
+
+        .calc-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <span class="badge">سوال <span id="q-idx">1</span> / 25</span>
+        <div class="jump-controls">
+            <span>شماره سوال:</span>
+            <input type="number" id="jump-input" min="1" max="25">
+            <button class="btn-jump" onclick="jumpToQ()">برو</button>
+        </div>
+    </div>
+
+    <div class="question-area" id="question-text"></div>
+
+    <div class="controls">
+        <input type="number" id="user-ans" class="main-input" placeholder="پاسخ" dir="ltr">
+        <button class="btn-check" onclick="checkAnswer()">بررسی</button>
+        <button class="btn-replay" onclick="replayAnimation()">تکرار انیمیشن</button>
+        <button class="btn-next" onclick="nextQ()">سوال بعدی</button>
+    </div>
+
+    <div class="info-box" id="step-info">برای شروع دکمه بررسی را بزنید.</div>
+
+    <div id="grid-stage" class="visual-container"></div>
+
+    <div class="final-calc" id="calc-box"></div>
+</div>
+
+<script>
+    // تابع ساخت HTML کسر
+    const f = (n, d) => `<div class="math-frac"><span class="top">${n}</span><span class="bottom">${d}</span></div>`;
+
+    // تابع رندر کردن مقدار: اگر بخش‌پذیر بود عدد، اگر نبود کسر (بدون ساده‌سازی)
+    function renderFraction(numerator, denominator, color = null) {
+        if (numerator % denominator === 0) {
+            return numerator / denominator;
+        } else {
+            // نمایش کسر بدون ساده‌سازی (طبق درخواست کاربر)
+            const n = numerator;
+            const d = denominator;
+            const style = color ? `color:${color}; border-color:${color};` : '';
+            return `<div class="math-frac" style="font-size:0.8em; ${style}">
+                        <span class="top" style="${style}">${n}</span>
+                        <span class="bottom">${d}</span>
+                    </div>`;
+        }
+    }
+
+    // بانک سوالات
+    const questions = [
+        // --- سوالات باقی‌مانده (Rem) ---
+        { text: `کشاورزی ${f(1,2)} زمین را گندم کاشت. در ${f(1,3)} **باقی‌مانده** جو کاشت. اگر 4 هکتار زمین خالی مانده باشد، کل زمین چقدر است؟`, f1: {n:1, d:2}, f2: {n:1, d:3}, val: 4, type: 'rem', valTarget: 'remainder_final', label1: 'گندم کاشتیم', label2: 'جو کاشتیم' },
+        { text: `علی ${f(1,3)} حقوقش را اجاره داد. ${f(1,2)} **باقی‌مانده** را پس‌انداز کرد. اگر 2 میلیون تومان برایش مانده باشد، کل حقوق چقدر است؟`, f1: {n:1, d:3}, f2: {n:1, d:2}, val: 2, type: 'rem', valTarget: 'remainder_final', label1: 'اجاره داد', label2: 'پس‌انداز کرد' },
+        { text: `از یک طناب ${f(1,4)} بریده شد. ${f(2,3)} **بقیه** طناب رنگ شد. اگر 5 متر طناب رنگ نشده (سفید) باشد، طول کل طناب؟`, f1: {n:1, d:4}, f2: {n:2, d:3}, val: 5, type: 'rem', valTarget: 'remainder_final', label1: 'بریدیم', label2: 'رنگ کردیم' },
+        { text: `سارا ${f(1,2)} کتاب را خواند. ${f(3,4)} **باقی‌مانده** را روز بعد خواند. اگر 10 صفحه نخوانده باشد، کل کتاب؟`, f1: {n:1, d:2}, f2: {n:3, d:4}, val: 10, type: 'rem', valTarget: 'remainder_final', label1: 'خوانده شد', label2: 'روز بعد خواند' },
+        // --- سوالات با مقدار معلوم در قسمت دوم ---
+        { text: `نیمی (${f(1,2)}) از زمین گندم است. ${f(1,3)} **باقی‌مانده** جو کاشته شد. اگر مقدار جو 10 هکتار باشد، کل زمین؟`, f1: {n:1, d:2}, f2: {n:1, d:3}, val: 10, type: 'rem', valTarget: 'part2', label1: 'گندم', label2: 'جو' },
+        { text: `رضا ${f(1,3)} پولش را خرج کرد. با ${f(1,2)} **باقی‌مانده** کیف خرید. اگر قیمت کیف 50 هزار تومان باشد، کل پول؟`, f1: {n:1, d:3}, f2: {n:1, d:2}, val: 50, type: 'rem', valTarget: 'part2', label1: 'خرج کرد', label2: 'کیف خرید' },
+        // --- سوالات ضربی (Sub) ---
+        { text: `${f(2,3)} دانش‌آموزان در مسابقه شرکت کردند. ${f(1,4)} از **شرکت‌کنندگان** (نه باقی‌مانده) عکس گرفتند. اگر 8 نفر عکس گرفته باشند، کل کلاس؟`, f1: {n:2, d:3}, f2: {n:1, d:4}, val: 8, type: 'sub', valTarget: 'part2', label1: 'شرکت کردند', label2: 'عکس گرفتند' },
+        { text: `در یک باغ ${f(3,5)} درختان سیب هستند. ${f(1,3)} از **درختان سیب** قرمزند. اگر 20 درخت سیب قرمز باشد، کل باغ؟`, f1: {n:3, d:5}, f2: {n:1, d:3}, val: 20, type: 'sub', valTarget: 'part2', label1: 'درخت سیب', label2: 'سیب قرمز' },
+        // --- ادامه سوالات ---
+        { text: `مخزنی ${f(1,4)} پر است. ${f(1,2)} آب موجود تبخیر شد. اگر 10 لیتر تبخیر شده باشد، گنجایش کل؟`, f1: {n:1, d:4}, f2: {n:1, d:2}, val: 10, type: 'sub', valTarget: 'part2', label1: 'آب موجود', label2: 'تبخیر شد' },
+        { text: `${f(1,2)} زمینی پارک است. ${f(1,5)} باقی‌مانده آبنما است. اگر آبنما 200 متر باشد، کل زمین؟`, f1: {n:1, d:2}, f2: {n:1, d:5}, val: 200, type: 'rem', valTarget: 'part2', label1: 'پارک', label2: 'آبنما' },
+        { text: `دانش‌آموزی ${f(1,3)} تکالیف را نوشت. ${f(2,5)} بقیه را بعدا نوشت. اگر 6 سوال مانده باشد، کل تکالیف؟`, f1: {n:1, d:3}, f2: {n:2, d:5}, val: 6, type: 'rem', valTarget: 'remainder_final', label1: 'نوشت', label2: 'بعدا نوشت' },
+        { text: `${f(3,4)} ظرفیت ورزشگاه پر شد. ${f(1,3)} تماشاگران کلاه دارند. اگر 1000 نفر کلاه داشته باشند، ظرفیت کل؟`, f1: {n:3, d:4}, f2: {n:1, d:3}, val: 1000, type: 'sub', valTarget: 'part2', label1: 'تماشاگران', label2: 'کلاه دارند' },
+        { text: `راننده‌ای ${f(1,5)} باک را مصرف کرد. ${f(1,4)} باقی‌مانده را روز بعد مصرف کرد. اگر 30 لیتر مانده باشد، کل باک؟`, f1: {n:1, d:5}, f2: {n:1, d:4}, val: 30, type: 'rem', valTarget: 'remainder_final', label1: 'مصرف اول', label2: 'مصرف دوم' },
+        { text: `مریم ${f(1,2)} پولش را به مادر داد. ${f(2,3)} باقی‌مانده را به خواهر داد. اگر 5000 تومان مانده باشد، کل پول؟`, f1: {n:1, d:2}, f2: {n:2, d:3}, val: 5000, type: 'rem', valTarget: 'remainder_final', label1: 'به مادر داد', label2: 'به خواهر داد' },
+        { text: `${f(2,5)} کتابی عکس است. ${f(1,2)} عکس‌ها رنگی هستند. اگر 20 صفحه عکس رنگی باشد، کل کتاب؟`, f1: {n:2, d:5}, f2: {n:1, d:2}, val: 20, type: 'sub', valTarget: 'part2', label1: 'عکس', label2: 'رنگی' },
+        { text: `فروشنده‌ای ${f(1,2)} بار خود را فروخت. ${f(3,5)} بقیه فاسد شد. اگر 4 کیلو سالم مانده باشد، کل بار؟`, f1: {n:1, d:2}, f2: {n:3, d:5}, val: 4, type: 'rem', valTarget: 'remainder_final', label1: 'فروخت', label2: 'فاسد شد' },
+        { text: `${f(1,4)} مسیر طی شد. ${f(1,3)} بقیه مسیر آسفالت شد. اگر آسفالت 10 کیلومتر باشد، کل مسیر؟`, f1: {n:1, d:4}, f2: {n:1, d:3}, val: 10, type: 'rem', valTarget: 'part2', label1: 'طی شد', label2: 'آسفالت شد' },
+        { text: `شخصی ${f(1,3)} عمرش را در سفر بود. ${f(1,4)} از زمان سفر را در کشتی بود. اگر 5 سال در کشتی بوده باشد، سن او؟`, f1: {n:1, d:3}, f2: {n:1, d:4}, val: 5, type: 'sub', valTarget: 'part2', label1: 'سفر', label2: 'کشتی' },
+        { text: `${f(1,2)} حوض خالی شد. ${f(1,2)} باقی‌مانده هم خالی شد. اگر 100 لیتر بماند، کل حوض؟`, f1: {n:1, d:2}, f2: {n:1, d:2}, val: 100, type: 'rem', valTarget: 'remainder_final', label1: 'خالی شد (1)', label2: 'خالی شد (2)' },
+        { text: `علی ${f(1,5)} پیتزا را خورد. رضا ${f(1,4)} باقی‌مانده را خورد. اگر 3 تکه بماند، کل پیتزا چند تکه بود؟`, f1: {n:1, d:5}, f2: {n:1, d:4}, val: 3, type: 'rem', valTarget: 'remainder_final', label1: 'علی خورد', label2: 'رضا خورد' },
+        { text: `(پیشرفته) ${f(1,2)} گندم است. ${f(2,3)} باقی‌مانده جو و یونجه است. اگر قسمت سوم باقی‌مانده (سبزیجات) 2 هکتار باشد، کل زمین؟`, f1: {n:1, d:2}, f2: {n:2, d:3}, val: 2, type: 'rem', valTarget: 'remainder_final', label1: 'گندم', label2: 'جو و یونجه' },
+        { text: `${f(2,3)} دانش‌آموزان عینکی هستند. ${f(1,2)} عینکی‌ها پسر هستند. اگر 10 پسر عینکی باشند، کل کلاس؟`, f1: {n:2, d:3}, f2: {n:1, d:2}, val: 10, type: 'sub', valTarget: 'part2', label1: 'عینکی', label2: 'پسر' },
+        { text: `کارگری ${f(1,4)} دیوار را رنگ کرد. ${f(2,3)} بقیه را کاغذ دیواری کرد. اگر 10 متر سفید ماند، کل دیوار؟`, f1: {n:1, d:4}, f2: {n:2, d:3}, val: 10, type: 'rem', valTarget: 'remainder_final', label1: 'رنگ کرد', label2: 'کاغذ دیواری' },
+        { text: `حوضی ${f(1,2)} آب دارد. ${f(1,5)} آب آن شور است. اگر 50 لیتر آب شور باشد، کل ظرفیت حوض؟`, f1: {n:1, d:2}, f2: {n:1, d:5}, val: 50, type: 'sub', valTarget: 'part2', label1: 'آب', label2: 'شور' },
+        { text: `پایان تمرین: ${f(1,2)} راه را آمدیم. ${f(1,2)} بقیه را دویدیم. اگر 1 کیلومتر دویده باشیم، کل راه؟`, f1: {n:1, d:2}, f2: {n:1, d:2}, val: 1, type: 'rem', valTarget: 'part2', label1: 'راه آمدیم', label2: 'دویدیم' },
+    ];
+
+    let currentQIndex = 0;
+    let gridStage = document.getElementById('grid-stage');
+    let lastSolution = null;
+
+    function solveMath(q) {
+        let total = 0, unitVal = 0;
+        const totalCells = q.f1.d * q.f2.d; 
+        let targetCellsCount = 0;
+
+        if (q.type === 'rem') {
+            const remCols = q.f1.d - q.f1.n; 
+            const part2Cells = remCols * q.f2.n;
+            const finalRemCells = remCols * (q.f2.d - q.f2.n);
+
+            if (q.valTarget === 'remainder_final') {
+                targetCellsCount = finalRemCells;
+            } else if (q.valTarget === 'part2') {
+                targetCellsCount = part2Cells;
+            }
+        } else if (q.type === 'sub') {
+            targetCellsCount = q.f1.n * q.f2.n;
+        }
+
+        unitVal = q.val / targetCellsCount;
+        total = unitVal * totalCells;
+
+        return { total: Math.round(total), unit: unitVal, targetCount: targetCellsCount };
+    }
+
+    function nextQ() {
+        if (currentQIndex < questions.length - 1) {
+            currentQIndex++;
+            loadQuestion();
+        } else {
+            alert("پایان آزمون!");
+        }
+    }
+
+    function jumpToQ() {
+        const val = parseInt(document.getElementById('jump-input').value);
+        if (val >= 1 && val <= 25) {
+            currentQIndex = val - 1;
+            loadQuestion();
+        } else {
+            alert("لطفا عددی بین 1 تا 25 وارد کنید");
+        }
+    }
+
+    function loadQuestion() {
+        const q = questions[currentQIndex];
+        document.getElementById('q-idx').innerText = currentQIndex + 1;
+        document.getElementById('question-text').innerHTML = q.text;
+        document.getElementById('user-ans').value = '';
+        document.getElementById('user-ans').disabled = false;
+        
+        document.querySelector('.btn-check').style.display = 'inline-block';
+        document.querySelector('.btn-next').style.display = 'none';
+        document.querySelector('.btn-replay').style.display = 'none';
+        
+        document.getElementById('step-info').innerHTML = "برای شروع حل، دکمه بررسی را بزنید.";
+        document.getElementById('calc-box').style.display = 'none';
+        
+        gridStage.innerHTML = '';
+        gridStage.style.gridTemplateColumns = '1fr';
+        gridStage.style.gridTemplateRows = '1fr';
+    }
+
+    function checkAnswer() {
+        const q = questions[currentQIndex];
+        const userVal = parseFloat(document.getElementById('user-ans').value);
+        lastSolution = solveMath(q);
+
+        if (isNaN(userVal)) {
+            alert("لطفا عدد وارد کنید");
+            return;
+        }
+        
+        const isCorrect = Math.abs(userVal - lastSolution.total) < 0.1;
+        
+        document.getElementById('user-ans').disabled = true;
+        document.querySelector('.btn-check').style.display = 'none';
+        
+        startAnimation(q, lastSolution, isCorrect);
+    }
+
+    function replayAnimation() {
+        const q = questions[currentQIndex];
+        const userVal = parseFloat(document.getElementById('user-ans').value);
+        const isCorrect = Math.abs(userVal - lastSolution.total) < 0.1;
+        
+        document.querySelector('.btn-replay').style.display = 'none';
+        document.querySelector('.btn-next').style.display = 'none';
+        
+        startAnimation(q, lastSolution, isCorrect);
+    }
+
+    function startAnimation(q, sol, isCorrect) {
+        const rows = q.f2.d;
+        const cols = q.f1.d;
+        let step = 0;
+        const speed = 1500;
+
+        function nextStep() {
+            step++;
+            if (step === 1) animateCut1();
+            else if (step === 2) animateColor1();
+            else if (step === 3) animateCut2();
+            else if (step === 4) animateColor2();
+            else if (step === 5) showValues();
+        }
+
+        function animateCut1() {
+            document.getElementById('step-info').innerHTML = `شکل را عمودی به <b style="color:#2980b9">${q.f1.d}</b> قسمت تقسیم می‌کنیم (خطوط آبی پررنگ).`;
+            gridStage.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            gridStage.style.gridTemplateRows = `1fr`;
+            gridStage.innerHTML = '';
+            for(let c=0; c<cols; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                if (c < cols-1) cell.classList.add('v-border'); 
+                cell.id = `col-${c}`;
+                gridStage.appendChild(cell);
+            }
+            setTimeout(nextStep, speed);
+        }
+
+        function animateColor1() {
+            document.getElementById('step-info').innerHTML = `<b>${q.f1.n}</b> قسمت را (${q.label1}) در نظر می‌گیریم.`;
+            for(let c=0; c<q.f1.n; c++) {
+                document.getElementById(`col-${c}`).classList.add('bg-col1');
+            }
+            setTimeout(nextStep, speed);
+        }
+
+        function animateCut2() {
+            document.getElementById('step-info').innerHTML = `حالا روی کل شکل، <b style="color:#c0392b">${q.f2.d}</b> برش افقی می‌زنیم (خطوط قرمز پررنگ).`;
+            gridStage.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+            gridStage.innerHTML = '';
+            for(let r=0; r<rows; r++) {
+                for(let c=0; c<cols; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (c < cols-1) cell.classList.add('v-border'); 
+                    if (r < rows-1) cell.classList.add('h-border');
+                    cell.id = `cell-${r}-${c}`;
+                    if (c < q.f1.n) cell.classList.add('bg-col1');
+                    gridStage.appendChild(cell);
+                }
+            }
+            setTimeout(nextStep, speed);
+        }
+
+        function animateColor2() {
+            if (q.type === 'rem') {
+                document.getElementById('step-info').innerHTML = `از قسمت‌های باقی‌مانده، <b>${q.f2.n}</b> ردیف را (${q.label2}) در نظر می‌گیریم.`;
+                for(let c=q.f1.n; c<cols; c++) {
+                    for(let r=0; r<q.f2.n; r++) {
+                        document.getElementById(`cell-${r}-${c}`).classList.add('bg-col2');
+                    }
+                }
+            } else {
+                document.getElementById('step-info').innerHTML = `از قسمت‌های ${q.label1}، <b>${q.f2.n}</b> ردیف را (${q.label2}) جدا می‌کنیم.`;
+                for(let c=0; c<q.f1.n; c++) {
+                    for(let r=0; r<q.f2.n; r++) {
+                        const cell = document.getElementById(`cell-${r}-${c}`);
+                        cell.classList.remove('bg-col1');
+                        cell.classList.add('bg-blue');
+                    }
+                }
+            }
+            setTimeout(nextStep, speed);
+        }
+
+        function showValues() {
+            document.getElementById('step-info').innerHTML = `مقدار داده شده (${q.val}) را در قسمت‌های مربوطه قرار می‌دهیم.`;
+            let targetCells = [];
+            
+            // پیدا کردن سلول‌های هدف
+            if (q.type === 'rem') {
+                if (q.valTarget === 'remainder_final') {
+                    for(let c=q.f1.n; c<cols; c++) {
+                        for(let r=q.f2.n; r<rows; r++) {
+                            const cell = document.getElementById(`cell-${r}-${c}`);
+                            targetCells.push(cell);
+                            cell.classList.add('bg-final');
+                        }
+                    }
+                } else if (q.valTarget === 'part2') {
+                    for(let c=q.f1.n; c<cols; c++) {
+                        for(let r=0; r<q.f2.n; r++) targetCells.push(document.getElementById(`cell-${r}-${c}`));
+                    }
+                }
+            } else {
+                 if (q.valTarget === 'part2') {
+                    for(let c=0; c<q.f1.n; c++) {
+                        for(let r=0; r<q.f2.n; r++) targetCells.push(document.getElementById(`cell-${r}-${c}`));
+                    }
+                }
+            }
+
+            // تولید HTML کسر یا عدد برای داخل سلول‌ها
+            const cellContent = renderFraction(q.val, targetCells.length, '#fff');
+            
+            targetCells.forEach(cell => {
+                cell.innerHTML = cellContent;
+                cell.style.color = '#fff';
+            });
+
+            // تولید خروجی کادر محاسبات
+            const calcBox = document.getElementById('calc-box');
+            calcBox.style.display = 'block';
+            
+            const msg = isCorrect ? "<span style='color:#2ecc71; font-size:1.2em'>آفرین! پاسخ درست است.</span>" : "<span style='color:#e74c3c; font-size:1.2em'>پاسخ اشتباه بود.</span>";
+            
+            // تولید کسر برای فرمول نهایی
+            const unitFractionHTML = renderFraction(q.val, targetCells.length, '#f1c40f');
+
+            calcBox.innerHTML = `
+                <div style="text-align:right; margin-bottom:15px;">${msg}</div>
+                
+                <div class="calc-row">
+                    <span>تعداد کل خانه‌ها:</span>
+                    <span class="math-ltr">${cols} × ${rows} = ${cols*rows}</span>
+                </div>
+                
+                <div class="calc-row">
+                    <span>ارزش هر خانه کوچک:</span>
+                    <span class="math-ltr">${q.val} ÷ ${targetCells.length} = ${unitFractionHTML}</span>
+                </div>
+
+                <div style="margin-top:15px; text-align:center;">
+                    <div style="margin-bottom:5px; font-size:0.9em; opacity:0.8;">کل زمین (پاسخ نهایی):</div>
+                    <div class="math-ltr" style="font-size:1.6em; color:#f1c40f; border:2px solid #fff; padding:5px 15px; border-radius:10px;">
+                        ${cols*rows} × ${unitFractionHTML} = ${sol.total}
+                    </div>
+                </div>
+            `;
+
+            document.querySelector('.btn-next').style.display = 'inline-block';
+            document.querySelector('.btn-replay').style.display = 'inline-block';
+        }
+        
+        nextStep();
+    }
+
+    loadQuestion();
+</script>
+</body>
+</html>
