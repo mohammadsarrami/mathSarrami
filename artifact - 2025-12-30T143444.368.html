@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تمرینات واژگان فارسی - پایه ششم</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tahoma', 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 10px;
+            line-height: 1.8;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 25px;
+            font-size: 1rem;
+        }
+
+        .word-section {
+            background-color: #f8f9fa;
+            border-right: 5px solid #667eea;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+
+        .word-title {
+            font-size: 1.6rem;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .exercise {
+            background-color: white;
+            padding: 18px;
+            margin-bottom: 18px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .exercise-title {
+            font-size: 1.2rem;
+            color: #2c3e50;
+            margin-bottom: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .exercise-title::before {
+            content: "📝";
+            margin-left: 8px;
+            font-size: 1.3rem;
+        }
+
+        .sentence-item {
+            margin-bottom: 12px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 6px;
+            font-size: 1.05rem;
+        }
+
+        .blank-line {
+            display: inline-block;
+            min-width: 120px;
+            border-bottom: 2px solid #3498db;
+            margin: 0 5px;
+        }
+
+        .relation-item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #fff9e6;
+            border-right: 3px solid #f39c12;
+            border-radius: 6px;
+            font-size: 1.05rem;
+        }
+
+        .sentence-type {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-radius: 6px;
+            font-size: 1.05rem;
+        }
+
+        .creative-prompt {
+            background-color: #fff3e0;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-right: 3px solid #ff9800;
+            font-size: 1.05rem;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #ecf0f1;
+            border-radius: 10px;
+            color: #7f8c8d;
+            font-size: 0.95rem;
+        }
+
+        /* واکنشگری برای موبایل */
+        @media screen and (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .container {
+                padding: 15px;
+                border-radius: 10px;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+                padding: 12px;
+                margin-bottom: 10px;
+            }
+
+            .subtitle {
+                font-size: 0.9rem;
+                margin-bottom: 15px;
+            }
+
+            .word-section {
+                padding: 15px;
+                margin-bottom: 20px;
+            }
+
+            .word-title {
+                font-size: 1.3rem;
+            }
+
+            .exercise {
+                padding: 12px;
+                margin-bottom: 12px;
+            }
+
+            .exercise-title {
+                font-size: 1.05rem;
+                margin-bottom: 10px;
+            }
+
+            .sentence-item,
+            .relation-item,
+            .sentence-type,
+            .creative-prompt {
+                font-size: 0.95rem;
+                padding: 8px;
+                margin-bottom: 8px;
+            }
+
+            .blank-line {
+                min-width: 80px;
+                display: inline-block;
+            }
+
+            .footer {
+                font-size: 0.85rem;
+                padding: 15px;
+            }
+        }
+
+        @media screen and (max-width: 480px) {
+            h1 {
+                font-size: 1.2rem;
+                padding: 10px;
+            }
+
+            .word-title {
+                font-size: 1.15rem;
+            }
+
+            .exercise-title {
+                font-size: 1rem;
+            }
+
+            .sentence-item,
+            .relation-item,
+            .sentence-type,
+            .creative-prompt {
+                font-size: 0.9rem;
+            }
+
+            .blank-line {
+                min-width: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 تمرینات واژگان فارسی - پایه ششم</h1>
+        <p class="subtitle">با تمرکز بر یادگیری عمیق و خلاقیت</p>
+
+        <!-- واژه ۱: پرخاش -->
+        <div class="word-section">
+            <div class="word-title">🔥 واژه ۱: پرخاش</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. شیر با پرخاش حمله کرد و <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. وقتی کسی عصبانی می‌شود، با پرخاش <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. معلم با پرخاش گفت که <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. سگ با پرخاش پارس کرد، چون <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. پرخاش نشانه این است که <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "صلح" با "آرامش" مانند رابطه "پرخاش" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "جنگ" با "صلح" مانند رابطه "پرخاش" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "نویسنده" با "نوشتن" مانند رابطه "پرخاش" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "خوشحالی" با "شادی" مانند رابطه "پرخاش" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. رابطه "کتاب" با "کتاب‌ها" مانند رابطه "پرخاش" با <span class="blank-line"></span> است.</div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> معلمی با پرخاش به دانش‌آموزی که در کلاس سر و صدا می‌کند، حرف می‌زند.</div>
+                <div class="sentence-item">۱. به نظر تو چه اتفاقی می‌افتد؟</div>
+                <div class="sentence-item">۲. آیا پرخاش بهترین راه است؟ چرا؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> تصور کن برادرت اسباب‌بازی‌ات را خراب کرده و تو عصبانی هستی.</div>
+                <div class="sentence-item">۳. اگر با پرخاش حرف بزنی چه اتفاقی می‌افتد؟</div>
+                <div class="sentence-item">۴. به جای پرخاش چه کار می‌توانی بکنی؟</div>
+            </div>
+        </div>
+
+        <!-- واژه ۲: تیمار -->
+        <div class="word-section">
+            <div class="word-title">💊 واژه ۲: تیمار</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. مادر با تیمار از بیمار <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. باغبان با تیمار گل‌ها را <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. پرستار با تیمار کامل <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. تیمار حیوانات نشان می‌دهد که <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. بدون تیمار، گیاه <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "آموزش" با "تدریس" مانند رابطه "تیمار" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "توجه" با "بی‌توجهی" مانند رابطه "تیمار" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "درمان" با "درمانگر" مانند رابطه "تیمار" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "مدرسه" با "آموزش" مانند رابطه "تیمار" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. رابطه "کار" با "کارها" مانند رابطه "تیمار" با <span class="blank-line"></span> است.</div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> دوست کلاسی‌ات مدت طولانی بیمار است و نمی‌تواند به مدرسه بیاید.</div>
+                <div class="sentence-item">۱. چگونه می‌توانی از او تیمار کنی؟</div>
+                <div class="sentence-item">۲. اگر کسی از او تیمار نکند، چه احساسی دارد؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> پدربزرگت بیمار شده و در خانه استراحت می‌کند.</div>
+                <div class="sentence-item">۳. چه کارهایی می‌توانی برای تیمار او انجام دهی؟</div>
+                <div class="sentence-item">۴. چرا تیمار سالمندان مهم است؟</div>
+            </div>
+        </div>
+
+        <!-- واژه ۳: نخجیر -->
+        <div class="word-section">
+            <div class="word-title">🏹 واژه ۳: نخجیر</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. شکارچی با دام حیوان را نخجیر کرد و <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. یوزپلنگ قادر است شکار را <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. نخجیر کردن حیوانات وحشی <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. برای نخجیر، شکارچی باید <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. امروزه نخجیر حیوانات در خطر انقراض <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "جستجو" با "یافتن" مانند رابطه "نخجیر" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "آزادی" با "اسارت" مانند رابطه "نخجیر" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "شکار" با "شکارچی" مانند رابطه "نخجیر" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "کوه" با "طبیعت" مانند رابطه "نخجیر" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. این واژه جمع ندارد یا معمول نیست: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> قانونی وضع شده که نخجیر حیوانات در خطر انقراض ممنوع است.</div>
+                <div class="sentence-item">۱. چرا این قانون مهم است؟</div>
+                <div class="sentence-item">۲. اگر همه حیوانات را نخجیر کنیم چه اتفاقی می‌افتد؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> حیوانات وحشی برای بقا باید حیوانات دیگر را نخجیر کنند.</div>
+                <div class="sentence-item">۳. چرا این کار برای آن‌ها طبیعی است؟</div>
+                <div class="sentence-item">۴. تفاوت نخجیر در طبیعت با شکار غیرقانونی چیست؟</div>
+            </div>
+        </div>
+
+        <!-- واژه ۴: نیرنگ -->
+        <div class="word-section">
+            <div class="word-title">🎭 واژه ۴: نیرنگ</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. روباه با نیرنگ کلاغ را <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. دشمن با نیرنگ سعی کرد که <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. نیرنگ نشانه این است که <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. اگر کسی با نیرنگ حرف بزند، <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. در داستان‌ها، شخصیت بد معمولاً با نیرنگ <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "درستی" با "صداقت" مانند رابطه "نیرنگ" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "دروغ" با "راستی" مانند رابطه "نیرنگ" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "تدریس" با "مدرس" مانند رابطه "نیرنگ" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "غم" با "اندوه" مانند رابطه "نیرنگ" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. رابطه "درخت" با "درختان" مانند رابطه "نیرنگ" با <span class="blank-line"></span> است.</div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> دانش‌آموزی با نیرنگ تقلب می‌کند تا نمره خوب بگیرد.</div>
+                <div class="sentence-item">۱. چرا تقلب یک نوع نیرنگ است؟</div>
+                <div class="sentence-item">۲. نتیجه نیرنگ در بلندمدت چیست؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> در داستان روباه و کلاغ، روباه با نیرنگ پنیر را می‌گیرد.</div>
+                <div class="sentence-item">۳. کلاغ چگونه می‌توانست از نیرنگ جلوگیری کند؟</div>
+                <div class="sentence-item">۴. چه درسی از این داستان یاد می‌گیریم؟</div>
+            </div>
+        </div>
+
+        <!-- واژه ۵: چیرگی -->
+        <div class="word-section">
+            <div class="word-title">🏆 واژه ۵: چیرگی</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. سپاه ایران با چیرگی بر دشمن <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. ورزشکار با تلاش به چیرگی <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. چیرگی نشانه این است که <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. برای رسیدن به چیرگی باید <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. پس از چیرگی، قهرمان <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "موفقیت" با "کامیابی" مانند رابطه "چیرگی" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "پیروزی" با "شکست" مانند رابطه "چیرگی" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "پیروز" با "پیروزی" مانند رابطه "چیرگی" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "جنگ" با "نبرد" مانند رابطه "چیرگی" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. رابطه "خانه" با "خانه‌ها" مانند رابطه "چیرگی" با <span class="blank-line"></span> است.</div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> تیم مدرسه‌ات در مسابقه فوتبال به چیرگی رسیده است.</div>
+                <div class="sentence-item">۱. چه احساسی داری؟</div>
+                <div class="sentence-item">۲. چه عواملی باعث چیرگی شد؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> در تاریخ، ایرانیان با چیرگی بر دشمنان، کشور را آزاد کردند.</div>
+                <div class="sentence-item">۳. چرا چیرگی در دفاع از وطن مهم است؟</div>
+                <div class="sentence-item">۴. پس از چیرگی چگونه باید رفتار کنیم؟</div>
+            </div>
+        </div>
+
+        <!-- واژه ۶: آذرگشسب -->
+        <div class="word-section">
+            <div class="word-title">⚡ واژه ۶: آذرگشسب</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. آذرگشسب در آسمان درخشید و <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. صدای آذرگشسب باعث شد که <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. در شب طوفانی، آذرگشسب <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. ایرانیان باستان آذرگشسب را <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. وقتی آذرگشسب می‌زند، <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "باران" با "بارش" مانند رابطه "آذرگشسب" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "طوفان" با "آرامش" مانند رابطه "آذرگشسب" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "برف" با "برفی" مانند رابطه "آذرگشسب" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "رود" با "آب" مانند رابطه "آذرگشسب" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. این واژه معمولاً جمع ندارد: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> در شب طوفانی آذرگشسب می‌زند و آسمان را روشن می‌کند.</div>
+                <div class="sentence-item">۱. چه احساسی داری؟</div>
+                <div class="sentence-item">۲. چرا آذرگشسب برای طبیعت مفید است؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> مردم قدیم آذرگشسب را قدرت الهی می‌دانستند.</div>
+                <div class="sentence-item">۳. چرا این‌طور فکر می‌کردند؟</div>
+                <div class="sentence-item">۴. هنگام آذرگشسب چه کارهای ایمنی باید انجام دهیم؟</div>
+            </div>
+        </div>
+
+        <!-- واژه ۷: دادگر -->
+        <div class="word-section">
+            <div class="word-title">⚖️ واژه ۷: دادگر</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. پادشاه دادگر همیشه <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. معلم دادگر بین دانش‌آموزان <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. دادگر بودن یعنی اینکه <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. در جامعه، افراد دادگر <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. قاضی دادگر هرگز <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "مهربان" با "دلسوز" مانند رابطه "دادگر" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "عادل" با "ظالم" مانند رابطه "دادگر" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "عدالت" با "عادل" مانند رابطه "دادگر" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "دادگاه" با "قانون" مانند رابطه "دادگر" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. رابطه "معلم" با "معلمان" مانند رابطه "دادگر" با <span class="blank-line"></span> است.</div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> والدین بین دو فرزند خود تبعیض قائل می‌شوند.</div>
+                <div class="sentence-item">۱. چگونه باید دادگر باشند؟</div>
+                <div class="sentence-item">۲. فرزندی که با او بدتر رفتار می‌شود چه احساسی دارد؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> معلمی است که فقط به دانش‌آموزان زرنگ توجه می‌کند.</div>
+                <div class="sentence-item">۳. چگونه می‌تواند دادگر باشد؟</div>
+                <div class="sentence-item">۴. اگر دادگر نباشد چه اتفاقی می‌افتد؟</div>
+            </div>
+        </div>
+
+        <!-- واژه ۸: گردی -->
+        <div class="word-section">
+            <div class="word-title">🎨 واژه ۸: گردی</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. هوای گردی باعث می‌شود <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. در روزهای گردی، بهتر است <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. گردی هوا به خاطر <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. درختان می‌توانند گردی را <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. ماسک زدن در هوای گردی <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "تمیز" با "پاک" مانند رابطه "گردی" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "آلوده" با "پاک" مانند رابطه "گردی" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "گرد" با "گردآلود" مانند رابطه "گردی" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "دود" با "هوا" مانند رابطه "گردی" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. این واژه معمولاً جمع ندارد: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> امروز هوای شهر بسیار گردی است و خطرناک.</div>
+                <div class="sentence-item">۱. چه کارهایی باید انجام دهی؟</div>
+                <div class="sentence-item">۲. گردی چه خطراتی دارد؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> می‌خواهیم از گردی هوا جلوگیری کنیم.</div>
+                <div class="sentence-item">۳. چه راه‌حل‌هایی پیشنهاد می‌کنی؟</div>
+                <div class="sentence-item">۴. چرا گردی هوا رخ می‌دهد؟</div>
+            </div>
+        </div>
+
+        <!-- واژه ۹: دستگاه -->
+        <div class="word-section">
+            <div class="word-title">🎼 واژه ۹: دستگاه</div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۳: جمله‌سازی با واژه</div>
+                <div class="sentence-item">۱. نوازنده دستگاه موسیقی شور را <span class="blank-line"></span></div>
+                <div class="sentence-item">۲. هر دستگاه موسیقی ایرانی <span class="blank-line"></span></div>
+                <div class="sentence-item">۳. یادگیری دستگاه‌های موسیقی <span class="blank-line"></span></div>
+                <div class="sentence-item">۴. دستگاه همایون یکی از <span class="blank-line"></span></div>
+                <div class="sentence-item">۵. استاد موسیقی دستگاه‌ها را <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۴: روابط واژگانی</div>
+                <div class="relation-item">۱. رابطه "آهنگ" با "موسیقی" مانند رابطه "دستگاه" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۲. رابطه "نظم" با "بی‌نظمی" مانند رابطه "دستگاه" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۳. رابطه "سازنده" با "ساختن" مانند رابطه "دستگاه" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۴. رابطه "سنتور" با "ساز" مانند رابطه "دستگاه" با <span class="blank-line"></span> است.</div>
+                <div class="relation-item">۵. رابطه "ساز" با "سازها" مانند رابطه "دستگاه" با <span class="blank-line"></span> است.</div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۵: انواع جمله</div>
+                <div class="sentence-type">جمله امری: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله پرسشی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله عاطفی: <span class="blank-line"></span></div>
+                <div class="sentence-type">جمله خبری: <span class="blank-line"></span></div>
+            </div>
+
+            <div class="exercise">
+                <div class="exercise-title">تمرین ۶: تفکر خلاق</div>
+                <div class="creative-prompt"><strong>موقعیت اول:</strong> موسیقی ایرانی دارای ۱۲ دستگاه اصلی است.</div>
+                <div class="sentence-item">۱. چرا دستگاه‌ها مهم هستند؟</div>
+                <div class="sentence-item">۲. چه احساسی نسبت به دستگاه‌های ایرانی داری؟</div>
+                <div class="creative-prompt"><strong>موقعیت دوم:</strong> می‌خواهی یک ساز بنوازی و دستگاه‌ها را یاد بگیری.</div>
+                <div class="sentence-item">۳. چگونه می‌توانی یاد بگیری؟</div>
+                <div class="sentence-item">۴. نقش دستگاه‌ها در موسیقی چیست؟</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>✨ این تمرینات برای تقویت مهارت‌های زبانی، تفکر انتقادی و خلاقیت طراحی شده است.</p>
+            <p>💡 با دقت و تمرکز کامل پاسخ دهید و از یادگیری لذت ببرید!</p>
+        </div>
+    </div>
+</body>
+</html>
