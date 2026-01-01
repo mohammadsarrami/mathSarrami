@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دیکته گویای معلم</title>
+    <style>
+        @font-face { font-family: 'Vazir'; src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir.woff2') format('woff2'); }
+        body { font-family: 'Vazir', sans-serif; background: #fafafa; text-align: center; padding: 20px; }
+        
+        .container {
+            max-width: 500px; margin: 0 auto; background: white;
+            padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-top: 5px solid #ff5722;
+        }
+
+        h2 { margin-top: 0; color: #444; }
+
+        input[type="text"] {
+            width: 100%; box-sizing: border-box; padding: 12px; font-size: 18px;
+            border: 2px solid #ddd; border-radius: 8px; margin-bottom: 15px; text-align: center;
+            font-family: inherit;
+        }
+
+        /* دکمه ضبط بزرگ و جذاب */
+        .mic-wrapper {
+            position: relative; width: 80px; height: 80px; margin: 10px auto;
+        }
+        .btn-record {
+            width: 100%; height: 100%; border-radius: 50%; border: none;
+            background: #f44336; color: white; font-size: 35px; cursor: pointer;
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+        .btn-record:active { transform: scale(0.9); }
+        .btn-record.recording { animation: pulse 1s infinite; background: #d32f2f; }
+        
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(244, 67, 54, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); } }
+
+        .status-text { font-size: 14px; color: #666; margin-bottom: 10px; min-height: 20px; }
+
+        .btn-action {
+            width: 100%; padding: 12px; font-size: 18px; border: none;
+            border-radius: 8px; cursor: pointer; margin-top: 10px; color: white;
+            font-family: inherit;
+        }
+        .btn-add { background: #4caf50; }
+        .btn-add:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-make { background: #3f51b5; margin-top: 30px; }
+
+        ul { list-style: none; padding: 0; margin-top: 20px; text-align: right; }
+        li { background: #e3f2fd; padding: 10px; margin-bottom: 5px; border-radius: 5px; display: flex; justify-content: space-between; align-items: center; }
+
+        textarea { width: 100%; height: 150px; margin-top: 10px; direction: ltr; border-radius: 8px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🎙️ ساخت دیکته هوشمند</h2>
+    <p style="font-size:12px; color:#777;">نام کلمه را بنویسید، دکمه قرمز را نگه دارید و صحبت کنید.</p>
+
+    <input type="text" id="wordInp" placeholder="کلمه مورد نظر (مثلاً: قسطنطنیه)">
+
+    <div class="mic-wrapper">
+        <button id="recBtn" class="btn-record">🎤</button>
+    </div>
+    <div id="status" class="status-text">آماده ضبط...</div>
+
+    <audio id="previewAudio" controls style="display:none; width:100%; margin-top:10px;"></audio>
+
+    <button id="addBtn" class="btn-action btn-add" onclick="addWord()" disabled>➕ افزودن به لیست</button>
+
+    <ul id="list"></ul>
+
+    <button class="btn-action btn-make" onclick="generateCode()">⚙️ دریافت فایل نهایی بازی</button>
+
+    <div id="resultArea" style="display:none; margin-top:20px;">
+        <p style="font-size:14px; font-weight:bold;">👇 کد زیر را کپی کنید و در یک فایل HTML ذخیره کنید:</p>
+        <textarea id="finalCode"></textarea>
+    </div>
+</div>
+
+<script>
+    let mediaRecorder;
+    let audioChunks = [];
+    let base64Audio = "";
+    let wordsList = [];
+
+    const recBtn = document.getElementById('recBtn');
+    const statusDiv = document.getElementById('status');
+    const preview = document.getElementById('previewAudio');
+
+    // مدیریت ضبط
+    recBtn.addEventListener('mousedown', startRecording);
+    recBtn.addEventListener('touchstart', startRecording); // برای موبایل
+    recBtn.addEventListener('mouseup', stopRecording);
+    recBtn.addEventListener('touchend', stopRecording);   // برای موبایل
+
+    async function startRecording(e) {
+        e.preventDefault();
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+            
+            mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+            
+            mediaRecorder.onstop = () => {
+                const blob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                reader.readAsDataURL(blob);
+                reader.onloadend = () => {
+                    base64Audio = reader.result;
+                    preview.src = base64Audio;
+                    preview.style.display = "block";
+                    document.getElementById('addBtn').disabled = false;
+                    statusDiv.innerText = "✅ ضبط شد. دکمه افزودن را بزنید.";
+                    statusDiv.style.color = "green";
+                };
+            };
+
+            mediaRecorder.start();
+            recBtn.classList.add('recording');
+            statusDiv.innerText = "🔴 در حال ضبط... (صحبت کنید)";
+            statusDiv.style.color = "red";
+        } catch(err) {
+            alert("⚠️ دسترسی به میکروفون داده نشد. لطفاً این کد را در سایت JSBin.com اجرا کنید.");
+        }
+    }
+
+    function stopRecording(e) {
+        e.preventDefault();
+        if(mediaRecorder && mediaRecorder.state !== "inactive") {
+            mediaRecorder.stop();
+            recBtn.classList.remove('recording');
+        }
+    }
+
+    function addWord() {
+        const txt = document.getElementById('wordInp').value.trim();
+        if(!txt || !base64Audio) { alert("لطفا کلمه و صدا را کامل کنید"); return; }
+
+        wordsList.push({ word: txt, audio: base64Audio });
+
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${txt}</span> <span style="font-size:12px">🔊 ضبط شد</span>`;
+        document.getElementById('list').appendChild(li);
+
+        // ریست کردن فرم
+        document.getElementById('wordInp').value = "";
+        preview.style.display = "none";
+        document.getElementById('addBtn').disabled = true;
+        statusDiv.innerText = "آماده برای کلمه بعدی...";
+        statusDiv.style.color = "#666";
+        base64Audio = "";
+        document.getElementById('wordInp').focus();
+    }
+
+    function generateCode() {
+        if(wordsList.length === 0) { alert("لیست خالی است!"); return; }
+
+        const jsonContent = JSON.stringify(wordsList);
+
+        // کد سمت دانش آموز با تمام ویژگی‌های درخواستی
+        const finalHTML = `
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دیکته هوشمند</title>
+    <style>
+        @font-face { font-family: 'Vazir'; src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font@v30.1.0/dist/Vazir.woff2') format('woff2'); }
+        body {
+            font-family: 'Vazir', sans-serif; background: #e3f2fd;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            min-height: 100vh; margin: 0; padding: 10px;
+        }
+        .card {
+            background: white; width: 90%; max-width: 450px; padding: 25px;
+            border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); text-align: center;
+            border-bottom: 6px solid #1976d2;
+        }
+        .play-btn {
+            width: 90px; height: 90px; background: #ff9800; border-radius: 50%; border: none;
+            color: white; font-size: 40px; cursor: pointer; box-shadow: 0 5px 0 #f57c00; margin-bottom: 10px;
+            transition: transform 0.1s;
+        }
+        .play-btn:active { transform: translateY(5px); box-shadow: none; }
+        
+        .repeat-btn {
+            background: #607d8b; color: white; border: none; padding: 8px 16px; border-radius: 20px;
+            font-size: 13px; cursor: pointer; margin-bottom: 20px; display: inline-block;
+        }
+
+        input {
+            width: 80%; padding: 12px; font-size: 22px; text-align: center; border: 3px solid #b0bec5;
+            border-radius: 12px; margin-bottom: 15px; outline: none; font-family: inherit;
+        }
+        input:focus { border-color: #2196f3; }
+
+        .btn-check {
+            width: 100%; padding: 14px; font-size: 20px; border: none; border-radius: 10px;
+            cursor: pointer; color: white; background: #4caf50; box-shadow: 0 4px 0 #388e3c;
+        }
+        
+        .btn-next {
+            width: 100%; padding: 14px; font-size: 20px; border: none; border-radius: 10px;
+            cursor: pointer; color: white; background: #9c27b0; box-shadow: 0 4px 0 #7b1fa2;
+            display: none; animation: popIn 0.5s;
+        }
+        @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
+
+        /* انیمیشن تکلیف */
+        @keyframes rainbowBorder {
+            0% { border-color: #f44336; color: #f44336; }
+            33% { border-color: #4caf50; color: #4caf50; }
+            66% { border-color: #2196f3; color: #2196f3; }
+            100% { border-color: #f44336; color: #f44336; }
+        }
+        .homework-box {
+            margin-top: 20px; padding: 15px; border: 4px dashed; border-radius: 15px;
+            font-weight: bold; font-size: 18px; line-height: 1.8; background: #fffde7;
+            display: none; animation: rainbowBorder 3s infinite linear;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h3 id="stepInfo" style="color:#777;"></h3>
+    
+    <button class="play-btn" onclick="playSnd()">🔊</button><br>
+    <button class="repeat-btn" onclick="playSnd()">🔄 تکرار صدا</button>
+    
+    <br>
+    <input type="text" id="ans" placeholder="بنویسید..." autocomplete="off">
+    
+    <div id="msg" style="height:30px; font-size:18px; margin-bottom:10px;"></div>
+    
+    <div id="hw" class="homework-box"></div>
+
+    <button class="btn-check" id="btnOk" onclick="check()">بررسی پاسخ ✅</button>
+    <button class="btn-next" id="btnNext" onclick="goNext()">کلمه بعدی ⬅️</button>
+</div>
+
+<script>
+    const data = ${jsonContent};
+    let idx = 0;
+    let audio = new Audio();
+
+    function init() {
+        document.getElementById('stepInfo').innerText = \`کلمه \${idx + 1} از \${data.length}\`;
+        document.getElementById('ans').value = "";
+        document.getElementById('ans').disabled = false;
+        document.getElementById('ans').focus();
+        document.getElementById('msg').innerHTML = "";
+        document.getElementById('hw').style.display = "none";
+        document.getElementById('btnOk').style.display = "block";
+        document.getElementById('btnNext').style.display = "none";
+        
+        audio.src = data[idx].audio;
+    }
+
+    function playSnd() {
+        audio.currentTime = 0;
+        audio.play();
+        document.getElementById('ans').focus();
+    }
+
+    function check() {
+        let user = document.getElementById('ans').value.trim().replace(/\\s+/g, ' ');
+        let correct = data[idx].word.trim().replace(/\\s+/g, ' ');
+
+        if(user === correct) {
+            playSnd(); // تشویق یا پخش مجدد
+            document.getElementById('msg').innerHTML = "<span style='color:green; font-weight:bold;'>آفرین! درست بود 👏</span>";
+            
+            // نمایش تکلیف
+            let hw = document.getElementById('hw');
+            hw.innerHTML = \`✏️ تکلیف: کلمه ((\${data[idx].word})) را در دفتر ((۳ بار)) بنویسید.<br>هر سری با ((یک رنگ)) متفاوت.\`;
+            hw.style.display = "block";
+
+            document.getElementById('ans').disabled = true;
+            document.getElementById('btnOk').style.display = "none";
+            document.getElementById('btnNext').style.display = "block";
+        } else {
+            audio.play();
+            document.getElementById('msg').innerHTML = "<span style='color:red; font-weight:bold;'>اشتباه شد، دوباره گوش کن!</span>";
+        }
+    }
+
+    function goNext() {
+        idx++;
+        if(idx < data.length) init();
+        else document.body.innerHTML = "<div class='card'><h1>🎉 پایان دیکته!</h1><button class='btn-check' onclick='location.reload()'>شروع دوباره</button></div>";
+    }
+
+    // اینتر زدن
+    document.getElementById('ans').addEventListener("keyup", function(e) {
+        if (e.key === "Enter") {
+            if(document.getElementById('btnNext').style.display === "none") check();
+            else goNext();
+        }
+    });
+
+    init();
+<\/script>
+</body>
+</html>`;
+
+        document.getElementById('resultArea').style.display = "block";
+        document.getElementById('finalCode').value = finalHTML;
+        document.getElementById('finalCode').select();
+    }
+</script>
+
+</body>
+</html>
