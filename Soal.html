@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>آزمون هوش استدلالی | تیزهوشان</title>
+    <!-- فراخوانی فونت زیبای وزیرمتن -->
+    <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+    
+    <style>
+        :root {
+            --primary-color: #3b82f6; /* رنگ آبی اصلی */
+            --secondary-color: #1e40af; /* آبی تیره */
+            --bg-color: #f3f4f6; /* پس زمینه کلی */
+            --card-bg: #ffffff; /* پس زمینه کارت سوال */
+            --text-color: #1f2937; /* رنگ متن */
+            --option-hover: #eff6ff; /* رنگ هاور گزینه‌ها */
+        }
+
+        body {
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            line-height: 1.8;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            position: relative;
+            padding: 30px;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+            margin: 0;
+        }
+
+        .progress-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .question-card {
+            display: none; /* پیش‌فرض مخفی */
+            animation: fadeIn 0.5s ease;
+        }
+
+        .question-card.active {
+            display: block; /* فقط سوال فعال نمایش داده شود */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .question-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 25px;
+            color: #111827;
+            text-align: justify;
+        }
+
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            background-color: #fff;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .option-item:hover {
+            border-color: var(--primary-color);
+            background-color: var(--option-hover);
+        }
+
+        .option-circle {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #9ca3af;
+            border-radius: 50%;
+            margin-left: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #9ca3af;
+            font-weight: bold;
+        }
+
+        /* استایل حالت انتخاب شده (برای تعامل آینده اگر نیاز بود) */
+        .option-item:active .option-circle {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+        }
+
+        .navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            border-top: 2px solid #e5e7eb;
+            padding-top: 20px;
+        }
+
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: 'Vazirmatn', sans-serif;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+        }
+
+        .btn:disabled {
+            background-color: #d1d5db;
+            cursor: not-allowed;
+        }
+
+        .btn-prev {
+            background-color: #6b7280;
+        }
+        .btn-prev:hover {
+            background-color: #4b5563;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>آزمون هوش استدلالی و منطقی</h1>
+        <div class="progress-info">سوال <span id="current-q-num">1</span> از 18</div>
+    </div>
+
+    <!-- سوال 1 -->
+    <div class="question-card active" data-index="1">
+        <div class="question-text">
+            ۱. در یک صف از دانش‌آموزان که همگی رو به شمال ایستاده‌اند، «پریا» نفر پانزدهم از سمت چپ و نفر دوازدهم از سمت راست است. اگر «راوی» دقیقاً در وسط این صف ایستاده باشد، موقعیت او از سمت چپ کدام است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> سیزدهم</li>
+            <li class="option-item"><div class="option-circle">ب</div> چهاردهم</li>
+            <li class="option-item"><div class="option-circle">ج</div> دوازدهم</li>
+            <li class="option-item"><div class="option-circle">د</div> پانزدهم</li>
+        </ul>
+    </div>
+
+    <!-- سوال 2 -->
+    <div class="question-card" data-index="2">
+        <div class="question-text">
+            ۲. پنج دوست به نام‌های «آرش»، «بابک»، «سینا»، «داریوش» و «احسان» دور یک میز گرد نشسته‌اند. آرش دومین نفر سمت راست بابک است. سینا کنار آرش ننشسته است. داریوش سومین نفر سمت چپ احسان است. اگر بابک و احسان کنار هم نباشند، چه کسی دقیقاً سمت چپ سینا نشسته است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> آرش</li>
+            <li class="option-item"><div class="option-circle">ب</div> بابک</li>
+            <li class="option-item"><div class="option-circle">ج</div> داریوش</li>
+            <li class="option-item"><div class="option-circle">د</div> احسان</li>
+        </ul>
+    </div>
+
+    <!-- سوال 3 -->
+    <div class="question-card" data-index="3">
+        <div class="question-text">
+            ۳. در کلاسی با ۴۵ دانش‌آموز که بر اساس قدشان از بلندترین به کوتاه‌ترین مرتب شده‌اند، رتبه‌ی «مریم» از بالا شانزدهم است. پس از اینکه دو دانش‌آموز جدید به کلاس اضافه شدند، رتبه‌ی مریم از بالا هجدهم شد. در مورد قد این دو دانش‌آموز جدید چه نتیجه‌ای می‌توان گرفت؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> هر دو بلندتر از مریم هستند</li>
+            <li class="option-item"><div class="option-circle">ب</div> هر دو کوتاه‌تر از مریم هستند</li>
+            <li class="option-item"><div class="option-circle">ج</div> یکی بلندتر و دیگری کوتاه‌تر از مریم است</li>
+            <li class="option-item"><div class="option-circle">د</div> قابل تشخیص نیست</li>
+        </ul>
+    </div>
+
+    <!-- سوال 4 -->
+    <div class="question-card" data-index="4">
+        <div class="question-text">
+            ۴. شش نفر به نام‌های «پرهام»، «کسری»، «رادین»، «سپهر»، «تورج» و «امید» در دو ردیف سه‌نفره، رو‌به‌روی یکدیگر نشسته‌اند. پرهام در هیچ‌کدام از دو سرِ ردیف ننشسته است. کسری دومین نفر سمت راست سپهر است. تورج رو‌به‌روی کسری نشسته است. رادین و امید هر کدام در یکی از دو سرِ ردیف‌های خود قرار دارند. چه کسی رو‌به‌روی سپهر نشسته است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> پرهام</li>
+            <li class="option-item"><div class="option-circle">ب</div> رادین</li>
+            <li class="option-item"><div class="option-circle">ج</div> تورج</li>
+            <li class="option-item"><div class="option-circle">د</div> امید</li>
+        </ul>
+    </div>
+
+    <!-- سوال 5 -->
+    <div class="question-card" data-index="5">
+        <div class="question-text">
+            ۵. در یک مسابقه دو، «آرمین» نفر هشتم از اول و نفر پانزدهم از آخر شد. «بهرام» دقیقاً در جایگاه وسط قرار گرفت. اگر «کامران» ۵ رتبه جلوتر از نفر وسط به خط پایان رسیده باشد، رتبه‌ی کامران از اول چند است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> ششم</li>
+            <li class="option-item"><div class="option-circle">ب</div> هفتم</li>
+            <li class="option-item"><div class="option-circle">ج</div> هشتم</li>
+            <li class="option-item"><div class="option-circle">د</div> نهم</li>
+        </ul>
+    </div>
+
+    <!-- سوال 6 -->
+    <div class="question-card" data-index="6">
+        <div class="question-text">
+            ۶. هفت دوست در یک صف و رو به شمال ایستاده‌اند. مانی چهارم از چپ است. نادر سومین نفر سمت راست مانی است. امید دومین نفر سمت چپ نادر است. پدرام کنار مانی قرار ندارد. کاوه در یکی از دو انتهای صف ایستاده است. رضا نفر دوم از سمت راست است. جایگاه «سامان» کجاست؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> نفر اول از سمت چپ</li>
+            <li class="option-item"><div class="option-circle">ب</div> نفر دوم از سمت چپ</li>
+            <li class="option-item"><div class="option-circle">ج</div> نفر سوم از سمت چپ</li>
+            <li class="option-item"><div class="option-circle">د</div> نفر هفتم از سمت چپ</li>
+        </ul>
+    </div>
+
+    <!-- سوال 7 -->
+    <div class="question-card" data-index="7">
+        <div class="question-text">
+            ۷. در یک تورنمنت شطرنج، ۱۲ بازیکن رتبه‌بندی شده‌اند. رتبه‌ی «خسرو» بالاتر از «یوسف» اما پایین‌تر از «زانیار» است. «وحید» رتبه‌ی سوم است. «وریا» دقیقاً بین «خسرو» و «یوسف» است. اگر زانیار رتبه‌ی دوم باشد، و دقیقاً ۴ نفر بین رتبه‌ی وحید و خسرو فاصله باشد، رتبه‌ی احتمالی یوسف کدام است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> هشتم یا نهم</li>
+            <li class="option-item"><div class="option-circle">ب</div> نهم یا دهم</li>
+            <li class="option-item"><div class="option-circle">ج</div> دهم یا یازدهم</li>
+            <li class="option-item"><div class="option-circle">د</div> هفتم یا هشتم</li>
+        </ul>
+    </div>
+
+    <!-- سوال 8 -->
+    <div class="question-card" data-index="8">
+        <div class="question-text">
+            ۸. هشت دانش‌آموز (آ، ب، ک، د، ا، ف، گ، ه) بر اساس سنشان از کوچک به بزرگ مرتب شده‌اند. داریوش از فرهاد کوچک‌تر اما از بابک بزرگ‌تر است. احسان مسن‌ترین است. آرش از کاوه کوچک‌تر اما از گودرز بزرگ‌تر است. هومن دقیقاً در وسط است. بابک جوان‌ترین نیست. چند دانش‌آموز از هومن کوچک‌تر هستند؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> ۳</li>
+            <li class="option-item"><div class="option-circle">ب</div> ۴</li>
+            <li class="option-item"><div class="option-circle">ج</div> ۵</li>
+            <li class="option-item"><div class="option-circle">د</div> قابل تشخیص نیست</li>
+        </ul>
+    </div>
+
+    <!-- سوال 9 -->
+    <div class="question-card" data-index="9">
+        <div class="question-text">
+            ۹. «پوریا» ۳ طبقه بالاتر از «کوروش» است. «رامین» ۲ طبقه پایین‌تر از «پوریا» است. «سهراب» دقیقاً بین طبقات کوروش و پوریا است. «تیرداد» ۴ طبقه بالاتر از سهراب است. اگر کوروش در طبقه پنجم باشد، تیرداد در کدام طبقه است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> طبقه دهم</li>
+            <li class="option-item"><div class="option-circle">ب</div> طبقه یازدهم</li>
+            <li class="option-item"><div class="option-circle">ج</div> طبقه دوازدهم</li>
+            <li class="option-item"><div class="option-circle">د</div> طبقه سیزدهم</li>
+        </ul>
+    </div>
+
+    <!-- سوال 10 -->
+    <div class="question-card" data-index="10">
+        <div class="question-text">
+            ۱۰. نه کتاب از چپ به راست چیده شده‌اند. مانی چهارم از چپ است. نوید سومین نفر سمت راست مانی است. امید دومین نفر سمت چپ نوید است. پرهام و کسری در دو انتهای قفسه هستند. رضا همسایه مانی است. سهیل کنار هیچ‌یک از کتاب‌های دو سرِ قفسه نیست. کتاب تورج در کدام جایگاه‌ها می‌تواند قرار بگیرد؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> جایگاه دوم یا ششم</li>
+            <li class="option-item"><div class="option-circle">ب</div> جایگاه سوم یا هشتم</li>
+            <li class="option-item"><div class="option-circle">ج</div> جایگاه پنجم یا هشتم</li>
+            <li class="option-item"><div class="option-circle">د</div> جایگاه دوم یا هشتم</li>
+        </ul>
+    </div>
+
+    <!-- سوال 11 -->
+    <div class="question-card" data-index="11">
+        <div class="question-text">
+            ۱۱. در رتبه‌بندی آزمون یک کلاس، نمره‌ی «کامران» از «لاله» بیشتر، اما از «جاوید» کمتر شده است. نمره‌ی «مهرداد» دقیقاً میانگین نمرات کلاس است. اگر در این کلاس ۲۵ دانش‌آموز حضور داشته باشند و رتبه‌ی مهرداد سیزدهم و رتبه‌ی کامران هشتم باشد، بالاترین رتبه‌ی ممکنی که لاله می‌تواند داشته باشد، کدام است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> نهم</li>
+            <li class="option-item"><div class="option-circle">ب</div> دهم</li>
+            <li class="option-item"><div class="option-circle">ج</div> یازدهم</li>
+            <li class="option-item"><div class="option-circle">د</div> دوازدهم</li>
+        </ul>
+    </div>
+
+    <!-- سوال 12 -->
+    <div class="question-card" data-index="12">
+        <div class="question-text">
+            ۱۲. شش ماشین متعلق به «آرش»، «بابک»، «کوروش»، «داریوش»، «احسان» و «فرهاد» در یک ردیف پارک شده‌اند. ماشین «آرش» در جایی سمت چپِ ماشین «بابک» است. ماشین «کوروش» دقیقاً کنار ماشین «داریوش» است. ماشین «احسان» در یکی از دو انتهای صف قرار دارد. ماشین «فرهاد» دقیقاً دو جایگاه آن‌طرف‌تر از ماشین «احسان» است. اگر ماشین «بابک» چهارمین ماشین از چپ باشد، چند حالت مختلف برای چیدمان وجود دارد؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> ۲</li>
+            <li class="option-item"><div class="option-circle">ب</div> ۳</li>
+            <li class="option-item"><div class="option-circle">ج</div> ۴</li>
+            <li class="option-item"><div class="option-circle">د</div> ۵</li>
+        </ul>
+    </div>
+
+    <!-- سوال 13 -->
+    <div class="question-card" data-index="13">
+        <div class="question-text">
+            ۱۳. در اعلام نتایج یک آزمون، رتبه‌ی «خشایار» از بالا بیستم و رتبه‌ی «یاشار» از بالا بیست و دوم است. اگر در مجموع ۴۱ دانش‌آموز وجود داشته باشند و مجموع رتبه‌های این دو نفر برابر با ۴۲ باشد، چه ویژگی خاصی در مورد ترکیب رتبه‌ی آن‌ها وجود دارد؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> فاصله‌ی رتبه‌ی هر دو از نفر وسط (میانه) یکسان است</li>
+            <li class="option-item"><div class="option-circle">ب</div> یکی بالاتر از میانه و دیگری پایین‌تر از میانه است</li>
+            <li class="option-item"><div class="option-circle">ج</div> هر دو پایین‌تر از نفر وسط (میانه) هستند</li>
+            <li class="option-item"><div class="option-circle">د</div> میانگین رتبه‌ی آن‌ها دقیقاً برابر با رتبه‌ی نفر وسط است</li>
+        </ul>
+    </div>
+
+    <!-- سوال 14 -->
+    <div class="question-card" data-index="14">
+        <div class="question-text">
+            ۱۴. هفت نفر (پدرام، کسری، رامین، سامان، تورج، امید، وحید) در یک صف ایستاده‌اند. پدرام نفر سوم از یک انتها و کسری نفر دوم از انتهای دیگر است. رامین در وسط صف است. سامان کنار رامین است. تورج در هیچ‌یک از دو سر صف نیست. بین امید و وحید یک نفر فاصله است. جایگاه «تورج» از سمت چپ کجاست؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> چهارم</li>
+            <li class="option-item"><div class="option-circle">ب</div> پنجم</li>
+            <li class="option-item"><div class="option-circle">ج</div> ششم</li>
+            <li class="option-item"><div class="option-circle">د</div> اول</li>
+        </ul>
+    </div>
+
+    <!-- سوال 15 -->
+    <div class="question-card" data-index="15">
+        <div class="question-text">
+            ۱۵. در یک آزمون رقابتی (۱ تا ۵۰): رتبه‌ی «آرش» یک عدد مربع کامل است. رتبه‌ی «بابک» ۵ تا بیشتر از رتبه‌ی آرش است. رتبه‌ی «کامران» دقیقاً دو برابر رتبه‌ی آرش است. اگر مجموع رتبه‌های آرش، بابک و کامران برابر با ۶۹ باشد، رتبه‌ی «آرش» چند است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> ۹</li>
+            <li class="option-item"><div class="option-circle">ب</div> ۱۶</li>
+            <li class="option-item"><div class="option-circle">ج</div> ۲۵</li>
+            <li class="option-item"><div class="option-circle">د</div> ۳۶</li>
+        </ul>
+    </div>
+
+    <!-- سوال 16 -->
+    <div class="question-card" data-index="16">
+        <div class="question-text">
+            ۱۶. هشت ورزشکار در یک مسیر دایره‌ای هستند. مانی در شروع است. نوید رو‌به‌روی مانی است. امید ۳ جایگاه ساعت‌گرد بعد از نوید است. پرهام ۲ جایگاه پادساعت‌گرد از مانی است. کسری کنار پرهام است. رضا بین مانی و نوید است. سهیل و تورج کجا هستند؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> سهیل کنار امید و تورج کنار رضا است</li>
+            <li class="option-item"><div class="option-circle">ب</div> سهیل بین امید و پرهام است و تورج کنار نوید است</li>
+            <li class="option-item"><div class="option-circle">ج</div> سهیل و تورج دو جایگاه باقی‌مانده را اشغال کرده‌اند</li>
+            <li class="option-item"><div class="option-circle">د</div> به صورت دقیق قابل تشخیص نیست</li>
+        </ul>
+    </div>
+
+    <!-- سوال 17 -->
+    <div class="question-card" data-index="17">
+        <div class="question-text">
+            ۱۷. در ۳۰ خانه (شماره ۱ تا ۳۰): خانه قرمز هشتم از چپ است. خانه آبی دوازدهم از راست است. خانه سبز دقیقاً وسط قرمز و آبی است. خانه زرد ۳ خانه سمت راست خانه سبز است. شماره خانه زرد چند است؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> ۱۸</li>
+            <li class="option-item"><div class="option-circle">ب</div> ۱۹</li>
+            <li class="option-item"><div class="option-circle">ج</div> ۲۰</li>
+            <li class="option-item"><div class="option-circle">د</div> ۱۷</li>
+        </ul>
+    </div>
+
+    <!-- سوال 18 -->
+    <div class="question-card" data-index="18">
+        <div class="question-text">
+            ۱۸. پنج دوست دور یک میز پنج‌ضلعی هستند. آرش رو‌به‌روی طرفدار قهوه است. بابک (چای) ۲ جایگاه ساعت‌گرد بعد از آرش است. کوروش (آبمیوه) کنار بابک نیست. داریوش (شیر) رو‌به‌روی کوروش است. احسان نوشابه دوست دارد. چه کسی رو‌به‌روی کسی است که نوشابه دوست دارد؟
+        </div>
+        <ul class="options-list">
+            <li class="option-item"><div class="option-circle">الف</div> آرش</li>
+            <li class="option-item"><div class="option-circle">ب</div> بابک</li>
+            <li class="option-item"><div class="option-circle">ج</div> کوروش</li>
+            <li class="option-item"><div class="option-circle">د</div> داریوش</li>
+        </ul>
+    </div>
+
+
+    <div class="navigation">
+        <button class="btn btn-prev" id="prevBtn" onclick="changeQuestion(-1)" disabled>
+            قبلی
+        </button>
+        <button class="btn" id="nextBtn" onclick="changeQuestion(1)">
+            بعدی
+        </button>
+    </div>
+</div>
+
+<script>
+    let currentQuestionIndex = 0;
+    const questions = document.querySelectorAll('.question-card');
+    const totalQuestions = questions.length;
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const qNumSpan = document.getElementById('current-q-num');
+
+    function updateView() {
+        // مخفی کردن همه
+        questions.forEach(q => q.classList.remove('active'));
+        // نمایش سوال جاری
+        questions[currentQuestionIndex].classList.add('active');
+        
+        // بروزرسانی شماره سوال
+        qNumSpan.textContent = currentQuestionIndex + 1;
+
+        // وضعیت دکمه‌ها
+        prevBtn.disabled = currentQuestionIndex === 0;
+        
+        if (currentQuestionIndex === totalQuestions - 1) {
+            nextBtn.textContent = 'پایان آزمون';
+            nextBtn.style.backgroundColor = '#10b981'; // سبز
+        } else {
+            nextBtn.textContent = 'بعدی';
+            nextBtn.style.backgroundColor = ''; // بازگشت به رنگ اصلی
+        }
+    }
+
+    function changeQuestion(step) {
+        const newIndex = currentQuestionIndex + step;
+        if (newIndex >= 0 && newIndex < totalQuestions) {
+            currentQuestionIndex = newIndex;
+            updateView();
+        } else if (newIndex === totalQuestions) {
+            alert('خسته نباشید! آزمون به پایان رسید.');
+        }
+    }
+</script>
+
+</body>
+</html>
