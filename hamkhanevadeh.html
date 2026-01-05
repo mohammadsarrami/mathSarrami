@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بازی پرش قورباغه: با ماهی‌های شناگر</title>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font/dist/font-face.css');
+
+        body {
+            margin: 0; padding: 0;
+            font-family: 'Vazir', sans-serif;
+            background-color: #2c3e50;
+            overflow: hidden;
+            display: flex; justify-content: center;
+            height: 100vh;
+            user-select: none; -webkit-user-select: none;
+        }
+
+        #game-window {
+            width: 100%; max-width: 800px;
+            height: 100%; position: relative;
+            overflow: hidden; background: #2980b9;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        /* --- پس‌زمینه آب --- */
+        #water-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 200%;
+            background: linear-gradient(0deg, #2980b9 25%, #3498db 25%, #2980b9 50%, #3498db 50%, #2980b9 75%, #3498db 75%);
+            background-size: 100% 10vh;
+            z-index: 1; animation: flowWater 4s linear infinite; opacity: 0.8;
+        }
+
+        #water-pattern {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-image: radial-gradient(rgba(255,255,255,0.2) 2px, transparent 2px);
+            background-size: 30px 30px;
+            z-index: 2; animation: flowPattern 10s linear infinite;
+        }
+
+        @keyframes flowWater { 0% { transform: translateY(0); } 100% { transform: translateY(10vh); } }
+        @keyframes flowPattern { 0% { background-position: 0 0; } 100% { background-position: 0 100%; } }
+
+        /* --- پنل سوال --- */
+        #question-panel {
+            position: absolute; top: 12vh; left: 50%; transform: translateX(-50%);
+            width: 85%; max-width: 400px;
+            background: #fff; padding: 2vh 15px; border-radius: 15px;
+            text-align: center; z-index: 50;
+            border: 6px solid #8D6E63; 
+            box-shadow: 0 8px 0 #5D4037, 0 10px 15px rgba(0,0,0,0.3);
+            transition: top 0.3s;
+        }
+
+        #question-panel h2 {
+            margin: 0; color: #5D4037; font-size: clamp(0.8rem, 4vw, 1rem);
+            border-bottom: 2px dashed #ccc; padding-bottom: 5px; margin-bottom: 5px;
+        }
+
+        #question-panel h3 { margin: 0; color: #E65100; font-size: clamp(1.2rem, 6vw, 1.8rem); }
+
+        #score-board {
+            position: absolute; top: 10px; left: 10px;
+            background: rgba(0,0,0,0.6); color: white; padding: 5px 15px;
+            border-radius: 20px; font-size: 0.9rem; z-index: 60; border: 2px solid white;
+        }
+
+        /* --- کانتینر برگ‌ها --- */
+        #leaves-container {
+            position: absolute; top: 50%; left: 0; width: 100%;
+            display: flex; justify-content: center; align-items: center;
+            gap: 3vw; padding: 0 2vw; box-sizing: border-box; z-index: 10;
+        }
+
+        /* --- استایل برگ‌ها --- */
+        .leaf {
+            position: relative;
+            width: 28vw; max-width: 130px;
+            height: 20vw; max-height: 90px;
+            background: #43A047;
+            border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            text-align: center; color: white; font-weight: bold;
+            font-size: clamp(0.8rem, 2.5vw, 1.1rem);
+            cursor: pointer;
+            box-shadow: 0 0.5vh 0 #1B5E20, 0 1vh 1vh rgba(0,0,0,0.3);
+            border: 2px solid #81C784;
+            transition: transform 0.1s;
+            animation: slideIn 0.5s ease-out forwards;
+            overflow: hidden; /* مخفی کردن ماهی وقتی از کادر خارج می‌شود */
+        }
+        
+        .leaf:active { transform: scale(0.95); box-shadow: 0 2px 0 #1B5E20; }
+
+        /* متن روی برگ باید روی ماهی باشد */
+        .leaf span { position: relative; z-index: 5; }
+
+        /* --- استایل ماهی داخل برگ --- */
+        .fish-decoration {
+            position: absolute;
+            top: 50%;
+            font-size: 24px;
+            opacity: 0.4; /* شفافیت برای دیده شدن متن */
+            z-index: 1; /* زیر متن */
+            animation: swimInside 4s linear infinite;
+            filter: grayscale(0.5); /* کمی رنگ و رو رفته تا مزاحم نباشد */
+        }
+
+        @keyframes swimInside {
+            0% { left: -40px; transform: translateY(-50%) scaleX(1); } /* شروع از بیرون چپ */
+            100% { left: 100%; transform: translateY(-50%) scaleX(1); } /* پایان بیرون راست */
+        }
+
+        @keyframes slideIn { from { transform: translateY(-30vh); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* --- قورباغه --- */
+        #frog {
+            position: absolute; bottom: 5vh; left: 50%; transform: translateX(-50%);
+            width: 15vw; max-width: 80px; height: 15vw; max-height: 80px;
+            font-size: clamp(40px, 12vw, 60px);
+            display: flex; justify-content: center; align-items: center; z-index: 20;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            filter: drop-shadow(0 5px 5px rgba(0,0,0,0.5));
+        }
+
+        .breathing { animation: breathe 1.5s infinite alternate; }
+        @keyframes breathe { from { transform: translateX(-50%) scale(1); } to { transform: translateX(-50%) scale(1.1); } }
+
+        /* --- واکنش‌گرایی --- */
+        @media (max-height: 500px) {
+            #question-panel { top: 5px; padding: 5px; width: 60%; }
+            #question-panel h2 { display: none; }
+            #leaves-container { top: 45%; }
+            #frog { bottom: 2vh; }
+            .leaf { height: 12vh; width: 25vw; }
+            .fish-decoration { font-size: 18px; }
+        }
+
+        @media (min-width: 600px) {
+            .leaf { height: 100px; width: 140px; font-size: 1.2rem; }
+            #frog { font-size: 70px; width: 90px; height: 90px; }
+        }
+
+        /* --- صفحه پایان --- */
+        #end-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; color: white;
+        }
+        
+        button {
+            background: #FF9800; border: none; padding: 15px 30px;
+            font-size: 1.2rem; color: white; border-radius: 10px; cursor: pointer;
+            font-family: 'Vazir', sans-serif; margin-top: 20px;
+            border-bottom: 5px solid #E65100;
+        }
+        button:active { border-bottom: none; transform: translateY(5px); }
+
+        .shake { animation: shake 0.5s; background-color: #d32f2f !important; }
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-5px);} 75% {transform: translateX(5px);} }
+    </style>
+</head>
+<body>
+
+    <div id="game-window">
+        <div id="water-bg"></div>
+        <div id="water-pattern"></div>
+
+        <div id="score-board">
+            امتیاز: <span id="score">0</span> | <span id="level-name">هم‌خانواده</span>
+        </div>
+
+        <div id="question-panel">
+            <h2 id="q-type">هم‌خانواده‌ی کلمه:</h2>
+            <h3 id="q-word">...</h3>
+        </div>
+
+        <div id="leaves-container"></div>
+
+        <div id="frog" class="breathing">🐸</div>
+
+        <div id="end-screen">
+            <h1>پایان بازی!</h1>
+            <p>امتیاز نهایی: <span id="final-score"></span></p>
+            <button onclick="location.reload()">شروع مجدد</button>
+        </div>
+    </div>
+
+    <script>
+        const dataLevel1 = [
+            { word: "مرحله", answer: "رحلت", type: "هم‌خانواده" },
+            { word: "قدرت", answer: "مقتدر", type: "هم‌خانواده" },
+            { word: "حرکت", answer: "محرک", type: "هم‌خانواده" },
+            { word: "مبالغه", answer: "بلیغ", type: "هم‌خانواده" },
+            { word: "تعجّب", answer: "عجایب", type: "هم‌خانواده" },
+            { word: "عظمت", answer: "معظم", type: "هم‌خانواده" },
+            { word: "چنگ", answer: "چنگال", type: "هم‌خانواده" },
+            { word: "حمله", answer: "حملات", type: "هم‌خانواده" },
+            { word: "غریب", answer: "مغرب", type: "هم‌خانواده" }
+        ];
+
+        const dataLevel2 = [
+            { word: "دشوار", answer: "سهل", type: "متضاد" },
+            { word: "پیروزی", answer: "شکست", type: "متضاد" },
+            { word: "سخت", answer: "آسان", type: "متضاد" },
+            { word: "خطرناک", answer: "امن", type: "متضاد" },
+            { word: "دراز", answer: "کوتاه", type: "متضاد" },
+            { word: "گذشته", answer: "آینده", type: "متضاد" },
+            { word: "دادگر", answer: "ظالم", type: "متضاد" },
+            { word: "پایان", answer: "آغاز", type: "متضاد" }
+        ];
+
+        const extraDistractors = ["زیبا", "خندان", "سریع", "سنگین", "مدرسه", "کتاب", "درخت", "نزدیک", "دور"];
+
+        let currentLevelData = [];
+        let currentIndex = 0;
+        let score = 0;
+        let isAnimating = false;
+
+        const frog = document.getElementById('frog');
+        const leavesContainer = document.getElementById('leaves-container');
+        const qWord = document.getElementById('q-word');
+        const qType = document.getElementById('q-type');
+        const scoreEl = document.getElementById('score');
+        const levelNameEl = document.getElementById('level-name');
+        const endScreen = document.getElementById('end-screen');
+        const gameWindow = document.getElementById('game-window');
+
+        function initGame() {
+            currentLevelData = shuffle([...dataLevel1]);
+            loadQuestion();
+        }
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function loadQuestion() {
+            leavesContainer.innerHTML = '';
+            resetFrogPosition();
+
+            if (currentIndex >= currentLevelData.length) {
+                if (levelNameEl.innerText.includes("هم‌خانواده")) {
+                    alert("مرحله اول تمام شد! حالا بریم سراغ متضادها.");
+                    levelNameEl.innerText = "متضاد";
+                    currentLevelData = shuffle([...dataLevel2]);
+                    currentIndex = 0;
+                    loadQuestion();
+                    return;
+                } else {
+                    document.getElementById('final-score').innerText = score;
+                    endScreen.style.display = 'flex';
+                    return;
+                }
+            }
+
+            const currentQ = currentLevelData[currentIndex];
+            qType.innerText = currentQ.type === "هم‌خانواده" ? "هم‌خانواده‌ی:" : "مخالف (متضاد):";
+            qWord.innerText = currentQ.word;
+
+            let options = [currentQ.answer];
+            while (options.length < 3) {
+                let randomD = Math.random() > 0.5 
+                    ? extraDistractors[Math.floor(Math.random() * extraDistractors.length)]
+                    : dataLevel1.concat(dataLevel2)[Math.floor(Math.random() * 10)].answer;
+                
+                if (!options.includes(randomD) && randomD !== currentQ.answer) {
+                    options.push(randomD);
+                }
+            }
+            options = shuffle(options);
+            
+            createLeaves(options, currentQ.answer);
+        }
+
+        function resetFrogPosition() {
+            frog.style.left = "50%";
+            frog.style.top = "auto";
+            frog.style.bottom = "5vh";
+            frog.style.transform = "translateX(-50%) scale(1)";
+            frog.classList.add('breathing');
+        }
+
+        function createLeaves(options, correctAnswer) {
+            setTimeout(() => {
+                options.forEach((opt, index) => {
+                    const leaf = document.createElement('div');
+                    leaf.className = 'leaf';
+                    // اضافه کردن ماهی و متن جداگانه
+                    leaf.innerHTML = `
+                        <div class="fish-decoration">🐟</div>
+                        <span>${opt}</span>
+                    `;
+                    leaf.style.animationDelay = (index * 0.15) + "s";
+                    leaf.onclick = (e) => handleJump(e, leaf, opt, correctAnswer);
+                    leavesContainer.appendChild(leaf);
+                });
+            }, 300);
+        }
+
+        function handleJump(e, leaf, selected, correct) {
+            if (isAnimating) return;
+            isAnimating = true;
+
+            if (selected === correct) {
+                const leafRect = leaf.getBoundingClientRect();
+                const gameRect = gameWindow.getBoundingClientRect();
+                const targetTop = leafRect.top - gameRect.top;
+                const targetLeft = leafRect.left - gameRect.left + (leafRect.width / 2);
+
+                frog.classList.remove('breathing');
+                frog.style.bottom = "auto";
+                frog.style.left = targetLeft + "px";
+                frog.style.top = (targetTop - 40) + "px";
+                frog.style.transform = "translateX(-50%) scale(1.3)";
+
+                score += 10;
+                scoreEl.innerText = score;
+
+                setTimeout(() => {
+                    currentIndex++;
+                    isAnimating = false;
+                    loadQuestion();
+                }, 1200);
+
+            } else {
+                leaf.classList.add('shake');
+                score = Math.max(0, score - 5);
+                scoreEl.innerText = score;
+                setTimeout(() => {
+                    leaf.classList.remove('shake');
+                    isAnimating = false;
+                }, 600);
+            }
+        }
+
+        initGame();
+    </script>
+</body>
+</html>
