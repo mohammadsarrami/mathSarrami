@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بازی هندسه مختصات - عملیات نجات!</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Vazirmatn', sans-serif;
+            touch-action: manipulation;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #70c5ce;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 540px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            overflow: hidden;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        #sky {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: #a4e5eb;
+            background-image: linear-gradient(to bottom, #70c5ce 0%, #a4e5eb 100%);
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .entity {
+            position: absolute;
+            width: 8%; 
+            height: 8%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            transform: translate(-50%, -50%); 
+            transition: all 1.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            z-index: 10;
+        }
+
+        #bird { z-index: 12; }
+        #pivot { font-size: 1.2rem; z-index: 11; }
+        #fox { display: none; z-index: 10; }
+
+        #ground {
+            background-color: #82c91e;
+            border-top: 6px solid #5c940d;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        #scoreboard {
+            background: #f1c40f;
+            color: #d35400;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            border: 2px solid #d35400;
+        }
+
+        #operation-text {
+            background: #e74c3c;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1rem;
+            text-align: center;
+            width: 100%;
+            box-shadow: inset 0 -3px 0 rgba(0,0,0,0.2);
+        }
+
+        #controls {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            gap: 10px;
+        }
+
+        .matrix-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+            flex: 1;
+        }
+
+        .matrix-container label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #2c3e50;
+        }
+
+        .matrix {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 8px 15px;
+        }
+
+        .matrix::before, .matrix::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            border: 3px solid #2c3e50;
+        }
+        .matrix::before {
+            right: 0;
+            border-left: none;
+            border-top-right-radius: 4px;
+            border-bottom-right-radius: 4px;
+        }
+        .matrix::after {
+            left: 0;
+            border-right: none;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+        }
+
+        input {
+            width: 50px;
+            padding: 8px;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            background: white;
+            outline: none;
+        }
+        
+        input:focus { border-color: #3498db; }
+        
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none; 
+            margin: 0; 
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 rgba(0,0,0,0.2);
+        }
+
+        #launchBtn { background-color: #e67e22; border-bottom: 3px solid #d35400; }
+        #nextBtn { background-color: #3498db; border-bottom: 3px solid #2980b9; display: none; }
+        .start-btn { background-color: #9b59b6; border-bottom: 3px solid #8e44ad; margin-top: 15px; }
+
+        #message {
+            min-height: 24px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        footer {
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        /* استایل‌های مربوط به پاپ‌آپ‌ها */
+        .modal-overlay {
+            display: flex;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(5px);
+        }
+
+        #victory-modal { display: none; z-index: 101; }
+
+        .modal-content {
+            background: #fff;
+            padding: 25px;
+            border-radius: 20px;
+            text-align: right;
+            max-width: 450px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            direction: rtl;
+        }
+
+        .victory-style { border: 5px solid #f1c40f; text-align: center; }
+        .welcome-style { border: 5px solid #3498db; }
+
+        .modal-content h2 { 
+            color: #2c3e50; 
+            font-size: 1.8rem; 
+            margin-top: 0; 
+            text-align: center;
+            border-bottom: 2px dashed #bdc3c7;
+            padding-bottom: 10px;
+        }
+        
+        .victory-style h2 { color: #27ae60; border-bottom: none; }
+
+        .modal-content p, .modal-content li { 
+            font-size: 1.1rem; 
+            line-height: 1.7; 
+            color: #2c3e50; 
+            font-weight: bold; 
+        }
+
+        .modal-content ul { padding-right: 25px; margin-bottom: 20px; }
+        .modal-content li { margin-bottom: 8px; }
+
+        .highlight-box {
+            background: #fff3cd;
+            border: 2px dashed #ffc107;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 1.1rem;
+            color: #856404;
+            text-align: center;
+            font-weight: 900;
+        }
+
+        .hw-box {
+            background: #e8f8f5;
+            border: 2px dashed #1abc9c;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 1.1rem;
+            color: #16a085;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- پاپ‌آپ آموزش و قوانین -->
+            <p>سلام به ریاضیدان‌های قهرمان! روباه مکار 🦊 در مختصات قایم شده و فقط تو می‌تونی پیداش کنی.</p>
+            
+            <p><strong>🎯 نحوه بازی:</strong></p>
+            <ul>
+                <li>ابتدا <b>مختصات پرنده 🐦</b> (طول و عرض) را در کادرهای سمت راست بنویس.</li>
+                <li>سپس با توجه به <b>ماموریت</b> (تقارن یا دوران)، مختصات هدف را حساب کن و در کادرهای <b>هدف 🦊</b> بنویس.</li>
+                <li>هر مرحله (شامل هر دو قسمت) مجموعاً <b>۳ امتیاز</b> دارد.</li>
+            </ul>
+
+            <p><strong>🏆 قانون امتیازها:</strong></p>
+            <ul>
+                <li>برای پیروزی کامل باید به <b>۴۵ امتیاز</b> برسی! (۱۵ مرحله صحیح)</li>
+            </ul>
+
+            <div class="highlight-box">
+                ⚠️ <strong>وقتی به پیام آخر رسیدی آن را اسکرین شات بگیر و برای آقای صرامی ارسال کن.</strong> ⚠️
+            </div>
+
+            <button class="start-btn" onclick="startGame()">بزن بریم! 💪</button>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <div id="sky">
+            <canvas id="gridCanvas" width="540" height="540"></canvas>
+            <div id="bird" class="entity">🐦</div>
+            <div id="pivot" class="entity">⭐</div>
+            <div id="fox" class="entity">🦊</div>
+        </div>
+        
+        <div id="ground">
+            <div id="scoreboard">امتیاز: <span id="score">0</span> / ۴۵</div>
+            <div id="operation-text">ماموریت در حال بارگذاری...</div>
+
+            <div id="controls">
+                <div class="matrix-container">
+                    <label>پرنده 🐦</label>
+                    <div class="matrix">
+                        <input type="number" id="birdX" placeholder="طول">
+                        <input type="number" id="birdY" placeholder="عرض">
+                    </div>
+                </div>
+
+                <div class="matrix-container">
+                    <label>هدف 🦊</label>
+                    <div class="matrix">
+                        <input type="number" id="targetX" placeholder="طول">
+                        <input type="number" id="targetY" placeholder="عرض">
+                    </div>
+                </div>
+            </div>
+
+            <button id="launchBtn" onclick="launchBird()">پرواز و کشف! 🚀</button>
+            <button id="nextBtn" onclick="initLevel()">مرحله بعد ➡️</button>
+
+            <div id="message"></div>
+            <footer>طراح: صرامی</footer>
+        </div>
+    </div>
+
+    <!-- پاپ‌آپ پیروزی و تکلیف -->
+    <div id="victory-modal" class="modal-overlay">
+        <div class="modal-content victory-style">
+            <h2>🏆 شاهکار کردی! 🏆</h2>
+            <p>تو یک نابغه هندسه هستی! تمام ۴۵ امتیاز را با موفقیت جمع‌آوری کردی.</p>
+            
+            <div class="highlight-box">
+                ⚠️ <strong>همین الان از این صفحه اسکرین شات بگیر و برای آقای صرامی ارسال کن!</strong> ⚠️
+            </div>
+
+            <div class="hw-box">
+                <b>یادآوری تکلیف:</b> <br> دو شکلی که باید در دو محور مختصات به صورت خلاقانه بکشید 🎨 و آن را نسبت به خطی با عرض ۵ تقارن محوری بدهید 🪞 و مختصات هر دو شکل را بکشید فراموش نشود! 📏🧠
+            </div>
+            
+            <button onclick="resetGame()">شروع دوباره بازی 🔄</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gridCanvas');
+        const ctx = canvas.getContext('2d');
+        const birdEl = document.getElementById('bird');
+        const pivotEl = document.getElementById('pivot');
+        const foxEl = document.getElementById('fox');
+        const msgEl = document.getElementById('message');
+        const launchBtn = document.getElementById('launchBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const scoreEl = document.getElementById('score');
+        const opTextEl = document.getElementById('operation-text');
+        const welcomeModal = document.getElementById('welcome-modal');
+        const victoryModal = document.getElementById('victory-modal');
+
+        const gridSize = 10;
+        let score = 0;
+        const targetScore = 45;
+        let levelCompleted = false; // جلوگیری از امتیازدهی مجدد در یک مرحله
+
+        let realBirdX, realBirdY, realPivotX, realPivotY, realFoxX, realFoxY;
+        let currentOperation = 0; 
+
+        function startGame() {
+            welcomeModal.style.display = "none";
+        }
+
+        function loadScore() {
+            const savedScore = localStorage.getItem('sarami_math_score');
+            if (savedScore) {
+                score = parseInt(savedScore);
+                if(score >= targetScore) score = 0; 
+            }
+            scoreEl.innerText = score;
+        }
+
+        function saveScore() {
+            localStorage.setItem('sarami_math_score', score);
+        }
+
+        function drawGrid() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const offset = 20; 
+            const cellSize = (canvas.width - 2 * offset) / gridSize;
+            
+            ctx.font = '16px Vazirmatn, Tahoma';
+            ctx.textAlign = 'center';
+
+            for (let i = 0; i <= gridSize; i++) {
+                let pos = offset + i * cellSize;
+
+                // ترسیم خطوط عمودی
+                ctx.beginPath();
+                if (i === 0) {
+                    ctx.strokeStyle = '#000000'; // محور اصلی مشکی پررنگ
+                    ctx.lineWidth = 3;
+                } else {
+                    ctx.strokeStyle = '#555555'; // خطوط مشبک خاکستری تیره
+                    ctx.lineWidth = 1.2;
+                }
+                ctx.moveTo(pos, offset);
+                ctx.lineTo(pos, canvas.height - offset);
+                ctx.stroke();
+                
+                // اعداد محور ایکس
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 16px Vazirmatn';
+                ctx.fillText(i, pos, canvas.height - 2);
+
+                // ترسیم خطوط افقی
+                let yPos = canvas.height - offset - (i * cellSize);
+                ctx.beginPath();
+                if (i === 0) {
+                    ctx.strokeStyle = '#000000'; // محور اصلی مشکی پررنگ
+                    ctx.lineWidth = 3;
+                } else {
+                    ctx.strokeStyle = '#555555'; // خطوط مشبک خاکستری تیره
+                    ctx.lineWidth = 1.2;
+                }
+                ctx.moveTo(offset, yPos);
+                ctx.lineTo(canvas.width - offset, yPos);
+                ctx.stroke();
+
+                // اعداد محور ایگرگ
+                if (i !== 0) ctx.fillText(i, 8, yPos + 6);
+            }
+        }
+
+        function setPosition(element, x, y) {
+            const offsetPercent = (20 / 540) * 100;
+            const cellPercent = (50 / 540) * 100;
+            
+            const leftPos = offsetPercent + (x * cellPercent);
+            const topPos = offsetPercent + ((10 - y) * cellPercent);
+
+            element.style.left = leftPos + '%';
+            element.style.top = topPos + '%';
+        }
+
+        function generateLevel() {
+            let valid = false;
+            while (!valid) {
+                realBirdX = Math.floor(Math.random() * (gridSize + 1));
+                realBirdY = Math.floor(Math.random() * (gridSize + 1));
+                realPivotX = Math.floor(Math.random() * (gridSize + 1));
+                realPivotY = Math.floor(Math.random() * (gridSize + 1));
+
+                currentOperation = Math.floor(Math.random() * 3);
+
+                if (currentOperation === 0) {
+                    realFoxX = 2 * realPivotX - realBirdX;
+                    realFoxY = 2 * realPivotY - realBirdY;
+                    opTextEl.innerText = "🔄 ماموریت: تقارن مرکزی (دوران ۱۸۰ درجه)";
+                    opTextEl.style.backgroundColor = "#e74c3c";
+                } else if (currentOperation === 1) {
+                    realFoxX = (realBirdY - realPivotY) + realPivotX;
+                    realFoxY = -(realBirdX - realPivotX) + realPivotY;
+                    opTextEl.innerText = "🔃 ماموریت: دوران ۹۰ درجه ساعت‌گرد";
+                    opTextEl.style.backgroundColor = "#8e44ad";
+                } else if (currentOperation === 2) {
+                    realFoxX = -(realBirdY - realPivotY) + realPivotX;
+                    realFoxY = (realBirdX - realPivotX) + realPivotY;
+                    opTextEl.innerText = "↺ ماموریت: دوران ۹۰ درجه پاد ساعت‌گرد";
+                    opTextEl.style.backgroundColor = "#d35400";
+                }
+
+                if (realFoxX >= 0 && realFoxX <= gridSize && 
+                    realFoxY >= 0 && realFoxY <= gridSize &&
+                    (realBirdX !== realPivotX || realBirdY !== realPivotY) &&
+                    (realFoxX !== realPivotX || realFoxY !== realPivotY)) {
+                    valid = true;
+                }
+            }
+        }
+
+        function initLevel() {
+            generateLevel();
+            levelCompleted = false; // ریست کردن وضعیت مرحله
+            
+            birdEl.style.transform = "translate(-50%, -50%)";
+            foxEl.style.display = "none";
+            foxEl.innerText = "🦊";
+            msgEl.innerText = "";
+            
+            document.querySelectorAll('input').forEach(input => input.value = '');
+            
+            launchBtn.style.display = "block";
+            nextBtn.style.display = "none";
+
+            setPosition(birdEl, realBirdX, realBirdY);
+            setPosition(pivotEl, realPivotX, realPivotY);
+            setPosition(foxEl, realFoxX, realFoxY); 
+        }
+
+        function checkWin() {
+            if (score >= targetScore) {
+                setTimeout(() => {
+                    victoryModal.style.display = "flex";
+                }, 1000);
+            }
+        }
+
+        function resetGame() {
+            score = 0;
+            saveScore();
+            scoreEl.innerText = score;
+            victoryModal.style.display = "none";
+            initLevel();
+        }
+
+        function launchBird() {
+            const parseSmartInput = (id) => {
+                let val = document.getElementById(id).value;
+                if (!val) return NaN;
+                val = val.toString().trim()
+                    .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d))
+                    .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d));
+                return parseInt(val, 10);
+            };
+
+            const inputBirdX = parseSmartInput('birdX');
+            const inputBirdY = parseSmartInput('birdY');
+            const inputTargetX = parseSmartInput('targetX');
+            const inputTargetY = parseSmartInput('targetY');
+
+            if (isNaN(inputBirdX) || isNaN(inputBirdY) || isNaN(inputTargetX) || isNaN(inputTargetY)) {
+                msgEl.style.color = "#e74c3c";
+                msgEl.innerText = "❌ لطفا تمام خانه‌های طول و عرض را با عدد پر کن!";
+                return;
+            }
+
+            if (inputBirdX !== realBirdX || inputBirdY !== realBirdY) {
+                msgEl.style.color = "#e74c3c";
+                msgEl.innerText = `❌ دقت کن! (سیستم مختصات پرنده را [${inputBirdX} ، ${inputBirdY}] دریافت کرد که اشتباه است)`;
+                return;
+            }
+
+            launchBtn.style.display = "none";
+            setPosition(birdEl, inputTargetX, inputTargetY);
+            birdEl.style.transform = "translate(-50%, -50%) rotate(1080deg) scale(1.3)";
+
+            setTimeout(() => {
+                birdEl.style.transform = "translate(-50%, -50%) rotate(1080deg) scale(1)";
+                
+                if (inputTargetX === realFoxX && inputTargetY === realFoxY) {
+                    foxEl.style.display = "flex";
+                    foxEl.innerText = "🕸️"; 
+                    
+                    msgEl.style.color = "#27ae60";
+                    msgEl.innerText = "✅ عالی بود! ۳ امتیاز گرفتی.";
+                    
+                    // جلوگیری از امتیازدهی مجدد
+                    if (!levelCompleted) {
+                        score += 3;
+                        levelCompleted = true;
+                        saveScore();
+                    }
+                    
+                    scoreEl.innerText = score;
+                    nextBtn.style.display = "block";
+                    checkWin();
+                } else {
+                    msgEl.style.color = "#e74c3c";
+                    msgEl.innerText = "❌ اشتباه بود! اینجا امتیازی نمی‌گیری. دوباره فکر کن.";
+                    
+                    setTimeout(() => {
+                        setPosition(birdEl, realBirdX, realBirdY);
+                        birdEl.style.transform = "translate(-50%, -50%)";
+                        launchBtn.style.display = "block";
+                    }, 2500);
+                }
+            }, 1200); 
+        }
+
+        loadScore();
+        drawGrid();
+        initLevel();
+
+        window.addEventListener('resize', drawGrid);
+    </script>
+</body>
+</html>
