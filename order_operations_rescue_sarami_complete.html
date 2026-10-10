@@ -234,7 +234,7 @@ const rescueMath = (() => {
         return binary(binary(unary('power', group(binary(power.a, '+', power.b)), power.exponent), '÷', power.divisor), plusMinus(), d);
       }
       case 3:
-        { const divisor = randomInt(15, 30), multiplier = choose([1, 2, 3]); return binary(binary(binary(a, '×', number(divisor * multiplier)), '÷', number(-divisor)), plusMinus(), unary('root', square())); }
+        { const divisor = randomInt(15, 30), multiplier = choose([1, 2, 3]); return binary(binary(a, '×', group(binary(number(divisor * multiplier), '÷', number(-divisor)))), plusMinus(), unary('root', square())); }
       case 4: {
         const power = closePair(), first = plusMinus(), last = negative();
         return binary(binary(unary('power', group(binary(power.a, '+', power.b)), choose([2, 3])), first, unary('root', square())), plusMinus(), last);
@@ -243,7 +243,8 @@ const rescueMath = (() => {
         // پنج عدد با سه یا چهار عدد منفی؛ زنجیرهٔ ضرب و تقسیم در هر دو جهت.
         const pair = divisiblePair(), inside = group(binary(pair.a, '+', pair.b));
         d = number(pair.c.value);
-        const chain = randomInt(0, 1) ? binary(binary(inside, '×', pair.c), '÷', d) : binary(binary(inside, '÷', pair.c), '×', d);
+        // تقسیم ابتدا عدد کوچک −۱ یا −۲ می‌سازد؛ سپس ضرب ذهنیِ کوچک×دورقمی انجام می‌شود.
+        const chain = binary(binary(inside, '÷', pair.c), '×', d);
         return binary(chain, plusMinus(), positive());
       }
       case 6: {
@@ -502,7 +503,7 @@ const rescueMath = (() => {
   renderGame = function () {
     let stairs = '';
     for (let index = 0; index < subCount; index++) stairs += `<div class="stair" style="--h:${Math.min(50 + index * 25, 180)}px"></div>`;
-    stage.innerHTML = `${img('stairs-background', 'sceneBg')}<div class="veil rescue-game-veil"></div><section class="rescue-puzzle"><div class="gameTitle">قلعهٔ تاریک — مرحلهٔ ${format(eqIndex + 1)} از ۷</div><div class="rescue-progress">زیرمسئله‌های درست: ${format(solved)} از ${format(subCount)} <span class="rescue-run-id" dir="ltr">${escapeHTML(runId)}</span></div><div class="equation" id="equation" aria-label="عبارت مرحله"></div><div class="rescue-selection"><button class="btn rescue-secondary" id="rescue-check-selection">بررسی انتخاب</button><button class="btn rescue-secondary" id="rescue-clear-selection">پاک‌کردن انتخاب</button></div><p id="rescue-selection-notice" class="rescue-selection-notice" role="status">${escapeHTML(notice || 'عددها و علامتِ زیرمسئلهٔ بعدی را انتخاب کن؛ سپس پاسخ بده.')}</p><div class="rescue-history" id="rescue-history" aria-live="polite"><div class="rescue-history-title">بازنویسی عبارت</div>${historyMarkup()}</div></section><div class="stepsArea">${stairs}</div>${img('standing-william', 'climber', 'پهلوان خان بابا')}<div class="stepsLabel">ابتدا پرانتز؛ سپس توان و جذر؛ سپس ضرب و تقسیم؛ سپس جمع و تفریق</div>`;
+    stage.innerHTML = `${img('stairs-background', 'sceneBg')}<div class="veil rescue-game-veil"></div><section class="rescue-puzzle"><div class="gameTitle">قلعهٔ تاریک — مرحلهٔ ${format(eqIndex + 1)} از ۷</div><div class="rescue-progress">زیرمسئله‌های درست: ${format(solved)} از ${format(subCount)} <span class="rescue-run-id" dir="ltr">${escapeHTML(runId)}</span></div><div class="equation" id="equation" aria-label="عبارت مرحله"></div><div class="rescue-selection"><button class="btn rescue-secondary" id="rescue-check-selection">بررسی انتخاب</button><button class="btn rescue-secondary" id="rescue-clear-selection">پاک‌کردن انتخاب</button></div><p id="rescue-selection-notice" class="rescue-selection-notice" role="status">${escapeHTML(notice || 'عددها و علامتِ زیرمسئلهٔ بعدی را انتخاب کن؛ سپس پاسخ بده.')}</p></section><div class="stepsArea">${stairs}</div>${img('standing-william', 'climber', 'پهلوان خان بابا')}<div class="stepsLabel">ابتدا پرانتز؛ سپس توان و جذر؛ سپس ضرب و تقسیم؛ سپس جمع و تفریق</div>`;
     renderTokens(); positionKnight();
     document.querySelector('#rescue-check-selection').onclick = checkSelection;
     document.querySelector('#rescue-clear-selection').onclick = () => { if (busy) return; selected = []; notice = ''; renderTokens(); setSelectionNotice('انتخاب پاک شد؛ زیرمسئلهٔ بعدی را انتخاب کن.'); };
@@ -549,8 +550,6 @@ const rescueMath = (() => {
     stage.querySelector('.dialogShade')?.remove();
     if (eqIndex === 6 && solved === subCount) stopClock();
     fanfare(); renderTokens(); positionKnight(solved, true);
-    const historyTarget = document.querySelector('#rescue-history');
-    if (historyTarget) historyTarget.innerHTML = '<div class="rescue-history-title">بازنویسی عبارت</div>' + historyMarkup();
     const shade = document.createElement('div'); shade.className = 'dialogShade';
     shade.innerHTML = `<div class="dialog rescue-correct"><b>آفرین! پاسخ درست است.</b><p>${mathHTML(operation + ' = ' + value)}</p><p class="rescue-rewrite-label">عبارت با جواب این زیرمسئله بازنویسی شد:</p><div class="rescue-rewrite">${mathHTML(after)}</div><p>خان بابا یک پله بالاتر رفت.</p><button class="btn">${solved === subCount ? 'دیدن نتیجهٔ مرحله' : 'زیرمسئلهٔ بعدی'}</button></div>`;
     stage.appendChild(shade); busy = true;
@@ -559,7 +558,7 @@ const rescueMath = (() => {
   showRoom = function () {
     scene = 'room'; busy = false;
     const [key, royal] = ROYALS[eqIndex];
-    stage.innerHTML = `${img('stairs-background', 'sceneBg')}<div class="veil"></div>${img(key, 'royal', royal)}${img('jail-bars', 'bars', 'میله‌های زندان')}${img('standing-william', 'rescuedKnight', 'خان بابا')}<section class="rescue-room"><h2>مرحلهٔ ${format(eqIndex + 1)} کامل شد؛ ${escapeHTML(royal)} آزاد شد!</h2><p class="rescue-receipt-name">دانش‌آموز: <strong>${escapeHTML(player)}</strong></p><p>زمان از آغاز بازی: <strong>${timeText()}</strong> <span dir="ltr">${escapeHTML(runId)}</span></p><div class="rescue-receipt-equation">${mathHTML(originalExpression + ' = ' + rescueMath.evaluate(tree))}</div><div class="rescue-room-history">${historyMarkup()}</div></section><button class="btn roomContinue">${eqIndex === 6 ? 'دیدن صفحهٔ پایانی' : 'ادامهٔ سفر'}</button>`;
+    stage.innerHTML = `${img('stairs-background', 'sceneBg')}<div class="veil"></div>${img(key, 'royal', royal)}${img('jail-bars', 'bars', 'میله‌های زندان')}${img('standing-william', 'rescuedKnight', 'خان بابا')}<section class="rescue-room"><h2>مرحلهٔ ${format(eqIndex + 1)} کامل شد؛ ${escapeHTML(royal)} آزاد شد!</h2><p class="rescue-receipt-name">دانش‌آموز: <strong>${escapeHTML(player)}</strong></p><p>زمان از آغاز بازی: <strong>${timeText()}</strong> <span dir="ltr">${escapeHTML(runId)}</span></p><div class="rescue-receipt-equation">${mathHTML(originalExpression + ' = ' + rescueMath.evaluate(tree))}</div></section><button class="btn roomContinue">${eqIndex === 6 ? 'دیدن صفحهٔ پایانی' : 'ادامهٔ سفر'}</button>`;
     fanfare(); updateTop();
     stage.querySelector('.roomContinue').onclick = () => { eqIndex++; updateTop(); if (eqIndex >= 7) showFinal(); else corridorCutscene(); };
   };
