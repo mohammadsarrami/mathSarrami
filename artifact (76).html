@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ربات حل معادله - محمد صرامی</title>
+  <style>
+    :root {
+      --bg-dark: #070b14;
+      --board-bg: #0f172a;
+      --cyan: #00f2fe;
+      --neon-blue: #38bdf8;
+      --neon-pink: #ff2a85;
+      --neon-green: #10b981;
+      --neon-yellow: #fbbf24;
+      --text-white: #f8fafc;
+      --line-balance: rgba(56, 189, 248, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 15%, rgba(0, 242, 254, 0.08) 0%, transparent 60%),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 30px 30px, 30px 30px;
+      font-family: system-ui, -apple-system, 'Segoe UI', Tahoma, sans-serif;
+      color: var(--text-white);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding: 12px 8px;
+      direction: rtl;
+      overflow-x: hidden;
+    }
+
+    header h1 {
+      font-size: 1.25rem;
+      color: var(--cyan);
+      text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .bot-speech-bubble {
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(0, 242, 254, 0.4);
+      box-shadow: 0 0 12px rgba(0, 242, 254, 0.15);
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+      margin-bottom: 12px;
+      text-align: center;
+      line-height: 1.4;
+    }
+
+    /* صحنه اصلی شامل ربات و تخته */
+    .stage-container {
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      justify-content: center;
+      width: 100%;
+      max-width: 900px;
+      position: relative;
+      gap: 10px;
+      min-height: 460px;
+    }
+
+    #armOverlaySvg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    /* کارت ربات */
+    .robot-teacher-card {
+      width: 130px;
+      position: relative;
+      flex-shrink: 0;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+    }
+
+    /* تخته هوشمند */
+    .smart-board {
+      flex: 1;
+      background: var(--board-bg);
+      border: 2px solid rgba(56, 189, 248, 0.4);
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(0, 242, 254, 0.05);
+      padding: 16px 8px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+      min-width: 0; /* جلوگیری از سرریز flex */
+    }
+
+    /* خط تعادل دقیقاً زیر علامت مساوی */
+    .vertical-balance-axis {
+      position: absolute;
+      top: 15px;
+      bottom: 15px;
+      left: 50%;
+      width: 2px;
+      border-left: 2px dashed var(--line-balance);
+      transform: translateX(-50%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .equations-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      z-index: 2;
+    }
+
+    .eq-row {
+      display: flex;
+      flex-direction: row !important;
+      direction: ltr !important;
+      align-items: center;
+      width: 100%;
+      font-size: 1.35rem;
+      font-family: 'Consolas', 'Courier New', monospace;
+      font-weight: 700;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition: all 0.35s ease-out;
+      white-space: nowrap !important;
+    }
+
+    .eq-row.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .eq-side-left {
+      flex: 1;
+      display: inline-flex;
+      justify-content: flex-end;
+      align-items: center;
+      padding-right: 8px;
+      direction: ltr !important;
+      white-space: nowrap !important;
+    }
+
+    .eq-equal {
+      width: 28px;
+      text-align: center;
+      color: var(--cyan);
+      font-weight: 900;
+      font-size: 1.6rem;
+      text-shadow: 0 0 8px rgba(0, 242, 254, 0.7);
+      flex-shrink: 0;
+    }
+
+    .eq-side-right {
+      flex: 1;
+      display: inline-flex;
+      justify-content: flex-start;
+      align-items: center;
+      padding-left: 8px;
+      direction: ltr !important;
+      white-space: nowrap !important;
+    }
+
+    .highlight-x {
+      color: var(--neon-pink);
+      text-shadow: 0 0 6px rgba(255, 42, 133, 0.8);
+      font-weight: 900;
+      margin-left: 2px;
+    }
+
+    .math-frac {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      padding: 0 3px;
+      font-size: 0.85em;
+      line-height: 1.05;
+    }
+    .math-frac .numerator {
+      border-bottom: 2px solid currentColor;
+      padding-bottom: 1px;
+    }
+    .math-frac .denominator {
+      padding-top: 1px;
+    }
+
+    .op-badge {
+      display: inline-block;
+      padding: 0 4px;
+      margin: 0 3px;
+      border-radius: 4px;
+      font-size: 0.95rem;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px dashed var(--neon-green);
+      color: var(--neon-green);
+      white-space: nowrap !important;
+    }
+
+    .final-ans {
+      color: var(--neon-green);
+      font-size: 1.55rem;
+      text-shadow: 0 0 10px rgba(16, 185, 129, 0.7);
+      font-weight: 900;
+    }
+
+    /* کادر نام اختصاصی */
+    .sarami-neon-box {
+      margin-top: 14px;
+      padding: 8px 30px;
+      border: 2px solid var(--neon-pink);
+      border-radius: 12px;
+      background: rgba(255, 42, 133, 0.08);
+      color: #fff;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-shadow: 
+        0 0 5px #fff,
+        0 0 10px var(--neon-pink),
+        0 0 20px var(--neon-pink);
+      box-shadow: 
+        0 0 12px rgba(255, 42, 133, 0.4),
+        inset 0 0 10px rgba(255, 42, 133, 0.2);
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+      width: 100%;
+      max-width: 400px;
+      justify-content: center;
+    }
+
+    button {
+      flex: 1;
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid var(--neon-blue);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      background: rgba(56, 189, 248, 0.25);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    }
+
+    button:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    /* بهینه‌سازی دقیق ویژه گوشی موبایل */
+    @media (max-width: 600px) {
+      body {
+        padding: 8px 4px;
+      }
+      header h1 {
+        font-size: 1.05rem;
+      }
+      .bot-speech-bubble {
+        font-size: 0.88rem;
+        padding: 6px 10px;
+      }
+      .robot-teacher-card {
+        width: 82px; /* باریک‌تر شدن ربات برای دادن فضای باز به تخته */
+      }
+      .stage-container {
+        gap: 6px;
+        min-height: 420px;
+      }
+      .smart-board {
+        padding: 14px 4px;
+      }
+      .eq-row {
+        font-size: 1.05rem; /* تطبیق سایز ریاضی برای جا شدن کامل در یک سطر */
+      }
+      .eq-equal {
+        width: 20px;
+        font-size: 1.25rem;
+      }
+      .eq-side-left {
+        padding-right: 4px;
+      }
+      .eq-side-right {
+        padding-left: 4px;
+      }
+      .op-badge {
+        font-size: 0.8rem;
+        padding: 0 2px;
+        margin: 0 2px;
+      }
+      .final-ans {
+        font-size: 1.25rem;
+      }
+      .sarami-neon-box {
+        font-size: 1rem;
+        padding: 6px 22px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>تدریس هوشمند معادله درجه اول</h1>
+  </header>
+
+  <div class="bot-speech-bubble" id="botDialog">
+    برای حل گام‌به‌گام معادله، روی دکمه شروع کلیک کنید.
+  </div>
+
+  <div class="stage-container" id="stage">
+    
+    <!-- تخته موازنه هوشمند -->
+    <div class="smart-board">
+      <div class="vertical-balance-axis"></div>
+      <div class="equations-container" id="eqList"></div>
+    </div>
+
+    <!-- ربات معلم با مفصل شانه سمت راست (رو به تخته) -->
+    <div class="robot-teacher-card">
+      <svg viewBox="0 0 170 420" width="100%" height="100%" preserveAspectRatio="xMidYMin meet">
+        <!-- آنتن و سر -->
+        <line x1="85" y1="40" x2="85" y2="15" stroke="var(--cyan)" stroke-width="4"/>
+        <circle cx="85" cy="12" r="6" fill="var(--neon-pink)"/>
+        <rect x="40" y="40" width="90" height="65" rx="16" fill="#1e293b" stroke="var(--cyan)" stroke-width="3"/>
+        <rect x="52" y="58" width="22" height="14" rx="4" fill="var(--cyan)"/>
+        <rect x="96" y="58" width="22" height="14" rx="4" fill="var(--cyan)"/>
+        <line x1="60" y1="88" x2="110" y2="88" stroke="var(--neon-green)" stroke-width="3" stroke-linecap="round"/>
+        
+        <!-- گردن -->
+        <rect x="75" y="105" width="20" height="14" fill="#334155"/>
+
+        <!-- تنه -->
+        <path d="M35,119 L135,119 L125,260 L45,260 Z" fill="#1e293b" stroke="var(--cyan)" stroke-width="3"/>
+        <circle cx="85" cy="165" r="20" fill="#0f172a" stroke="var(--neon-pink)" stroke-width="2.5"/>
+        <circle cx="85" cy="165" r="9" fill="var(--cyan)"/>
+
+        <!-- مفصل شانه راست (سمت تخته و رو به داخل) -->
+        <circle id="shoulderPoint" cx="35" cy="135" r="9" fill="var(--neon-yellow)" stroke="#fff" stroke-width="2"/>
+
+        <!-- پاها -->
+        <rect x="48" y="260" width="74" height="18" rx="4" fill="#334155"/>
+        <rect x="52" y="278" width="26" height="100" rx="7" fill="#1e293b" stroke="var(--cyan)" stroke-width="2"/>
+        <rect x="92" y="278" width="26" height="100" rx="7" fill="#1e293b" stroke="var(--cyan)" stroke-width="2"/>
+        <rect x="44" y="378" width="36" height="16" rx="5" fill="#334155"/>
+        <rect x="90" y="378" width="36" height="16" rx="5" fill="#334155"/>
+      </svg>
+    </div>
+
+    <!-- بازوی V شکل رباتیک شناور روی کل کادر -->
+    <svg id="armOverlaySvg">
+      <defs>
+        <filter id="neonGlow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="3.5" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <g id="ikArm" filter="url(#neonGlow)">
+        <!-- بازوی بالایی -->
+        <line id="segUpper" x1="0" y1="0" x2="0" y2="0" stroke="var(--cyan)" stroke-width="7" stroke-linecap="round"/>
+        <!-- مفصل آرنج (نوک پایین V) -->
+        <circle id="jointElbow" cx="0" cy="0" r="6.5" fill="var(--neon-pink)" stroke="#fff" stroke-width="2"/>
+        <!-- ساعد -->
+        <line id="segFore" x1="0" y1="0" x2="0" y2="0" stroke="var(--neon-blue)" stroke-width="5.5" stroke-linecap="round"/>
+        
+        <!-- انگشت اشاره‌گر که دقیقاً زیر عبارت نشانه می‌رود -->
+        <g id="handPointer">
+          <circle cx="0" cy="0" r="4.5" fill="var(--neon-yellow)"/>
+          <polygon points="0,-16 -6,0 6,0" fill="var(--neon-pink)" stroke="#fff" stroke-width="1.5"/>
+          <circle cx="0" cy="-16" r="2.5" fill="#fff"/>
+        </g>
+      </g>
+    </svg>
+
+  </div>
+
+  <!-- کادر اختصاصی محمد صرامی -->
+  <div class="sarami-neon-box">محمد صرامی</div>
+
+  <div class="controls">
+    <button id="btnStart">▶ شروع حل</button>
+    <button id="btnNew">🎲 معادله جدید</button>
+  </div>
+
+<script>
+  /* سینماتیک معکوس کاملاً پویا و سازگار با ابعاد موبایل */
+  class ResponsiveRobotArm {
+    constructor() {
+      this.shEl = document.getElementById('shoulderPoint');
+      this.segUpper = document.getElementById('segUpper');
+      this.segFore = document.getElementById('segFore');
+      this.elbow = document.getElementById('jointElbow');
+      this.hand = document.getElementById('handPointer');
+      this.stage = document.getElementById('stage');
+    }
+
+    getShoulderPos() {
+      const sRect = this.shEl.getBoundingClientRect();
+      const stageRect = this.stage.getBoundingClientRect();
+      return {
+        x: (sRect.left + sRect.width / 2) - stageRect.left,
+        y: (sRect.top + sRect.height / 2) - stageRect.top
+      };
+    }
+
+    pointToElement(element) {
+      if (!element) return;
+      const elRect = element.getBoundingClientRect();
+      const stageRect = this.stage.getBoundingClientRect();
+
+      // نوک انگشت اشاره ۲۴ پیکسل پایین‌تر از متن قرار می‌گیرد
+      const targetX = (elRect.left + elRect.width / 2) - stageRect.left;
+      const targetY = (elRect.bottom - stageRect.top) + 24;
+
+      const shoulder = this.getShoulderPos();
+      let dx = targetX - shoulder.x;
+      let dy = targetY - shoulder.y;
+      let dist = Math.hypot(dx, dy);
+
+      // محاسبه پویا برای طول بازوها بر اساس فاصله جاری تا هدف
+      // تضمین می‌کند که بازو همیشه شکل V خود را حفظ کند و قفل نشود
+      const armSegmentLength = Math.max(70, dist * 0.58);
+      const L1 = armSegmentLength;
+      const L2 = armSegmentLength;
+
+      const maxReach = (L1 + L2) * 0.98;
+      if (dist > maxReach) {
+        dx = (dx / dist) * maxReach;
+        dy = (dy / dist) * maxReach;
+        dist = maxReach;
+      }
+
+      const alpha = Math.atan2(dy, dx);
+      const cosB = (L1 * L1 + dist * dist - L2 * L2) / (2 * L1 * dist);
+      const angleB = Math.acos(Math.max(-1, Math.min(1, cosB)));
+
+      // زاویه بازو با آرنج به سمت پایین (V-Shape Elbow-Down)
+      const theta1 = alpha + angleB;
+
+      const elbowX = shoulder.x + L1 * Math.cos(theta1);
+      const elbowY = shoulder.y + L1 * Math.sin(theta1);
+
+      this.segUpper.setAttribute('x1', shoulder.x);
+      this.segUpper.setAttribute('y1', shoulder.y);
+      this.segUpper.setAttribute('x2', elbowX);
+      this.segUpper.setAttribute('y2', elbowY);
+
+      this.elbow.setAttribute('cx', elbowX);
+      this.elbow.setAttribute('cy', elbowY);
+
+      this.segFore.setAttribute('x1', elbowX);
+      this.segFore.setAttribute('y1', elbowY);
+      this.segFore.setAttribute('x2', targetX);
+      this.segFore.setAttribute('y2', targetY);
+
+      this.hand.setAttribute('transform', `translate(${targetX}, ${targetY})`);
+    }
+  }
+
+  const robotArm = new ResponsiveRobotArm();
+
+  /* منطق تولید معادله: ضریب صحیح، جواب صحیح (مثبت یا منفی) */
+  function generateMathProblem() {
+    const A = Math.floor(Math.random() * 8) + 2; 
+    const isPlus = Math.random() > 0.5;
+    const sign = isPlus ? 1 : -1;
+    const op = isPlus ? '+' : '-';
+
+    // ضریب کاملاً صحیح
+    const B = Math.floor(Math.random() * 5) + 2;
+    const signedB = sign * B;
+
+    // مجهول x صحیح (مثبت یا منفی، غیرصفر)
+    const xMagnitude = Math.floor(Math.random() * 5) + 1;
+    const xSign = Math.random() > 0.5 ? 1 : -1;
+    const x = xSign * xMagnitude;
+
+    const C = A + (signedB * x);
+    const rightAfterSub = C - A;
+
+    const oppA = -A;
+    const oppSignA = oppA >= 0 ? `+${oppA}` : `-${Math.abs(oppA)}`;
+
+    const steps = [];
+
+    // مرحله ۱
+    steps.push({
+      dialog: `معادله اصلی: عدد ثابت ${A} و جمله مجهول ${op} ${B}x در سمت چپ قرار دارند.`,
+      leftHtml: `<span id="focus0">${A} ${op} ${B}<span class="highlight-x">x</span></span>`,
+      rightHtml: `${C}`,
+      focusId: 'focus0'
+    });
+
+    // مرحله ۲
+    steps.push({
+      dialog: `برای حذف ${A}، قرینه آن (${oppSignA}) را به هر دو طرف معادله اضافه می‌کنیم.`,
+      leftHtml: `<span id="focus1">${A} ${op} ${B}<span class="highlight-x">x</span> <span class="op-badge">${oppSignA}</span></span>`,
+      rightHtml: `${C} <span class="op-badge">${oppSignA}</span>`,
+      focusId: 'focus1'
+    });
+
+    // مرحله ۳
+    steps.push({
+      dialog: `ساده‌سازی: در سمت چپ ${signedB}x و در سمت راست حاصل تفریق (${rightAfterSub}) به دست می‌آید.`,
+      leftHtml: `<span id="focus2">${signedB}<span class="highlight-x">x</span></span>`,
+      rightHtml: `${rightAfterSub}`,
+      focusId: 'focus2'
+    });
+
+    // مرحله ۴
+    steps.push({
+      dialog: `تقسیم طرفین بر ضریب مجهول (${signedB}) برای پیدا کردن مقدار x.`,
+      leftHtml: `<span id="focus3"><span class="math-frac"><span class="numerator">${signedB}<span class="highlight-x">x</span></span><span class="denominator">${signedB}</span></span></span>`,
+      rightHtml: `<span class="math-frac"><span class="numerator">${rightAfterSub}</span><span class="denominator">${signedB}</span></span>`,
+      focusId: 'focus3'
+    });
+
+    // مرحله ۵
+    let ansDialog = `پاسخ نهایی: مجهول x برابر عدد صحیح ${x} شد.`;
+    steps.push({
+      dialog: ansDialog,
+      leftHtml: `<span class="highlight-x" id="focus4">x</span>`,
+      rightHtml: `<span class="final-ans">${x}</span>`,
+      focusId: 'focus4'
+    });
+
+    return { steps, x };
+  }
+
+  let currentProblem = null;
+  let isSolving = false;
+
+  function loadNewProblem() {
+    if (isSolving) return;
+    currentProblem = generateMathProblem();
+    const list = document.getElementById('eqList');
+    list.innerHTML = '';
+
+    const firstStep = currentProblem.steps[0];
+    const row = document.createElement('div');
+    row.className = 'eq-row visible';
+    row.innerHTML = `
+      <div class="eq-side-left">${firstStep.leftHtml}</div>
+      <div class="eq-equal">=</div>
+      <div class="eq-side-right">${firstStep.rightHtml}</div>
+    `;
+    list.appendChild(row);
+
+    document.getElementById('botDialog').innerText = firstStep.dialog;
+    document.getElementById('btnStart').disabled = false;
+
+    setTimeout(() => {
+      robotArm.pointToElement(document.getElementById(firstStep.focusId));
+    }, 150);
+  }
+
+  async function startAutoSolve() {
+    if (isSolving) return;
+    isSolving = true;
+    document.getElementById('btnStart').disabled = true;
+    document.getElementById('btnNew').disabled = true;
+
+    const list = document.getElementById('eqList');
+
+    for (let i = 1; i < currentProblem.steps.length; i++) {
+      const step = currentProblem.steps[i];
+      document.getElementById('botDialog').innerText = step.dialog;
+
+      const row = document.createElement('div');
+      row.className = 'eq-row';
+      row.innerHTML = `
+        <div class="eq-side-left">${step.leftHtml}</div>
+        <div class="eq-equal">=</div>
+        <div class="eq-side-right">${step.rightHtml}</div>
+      `;
+      list.appendChild(row);
+
+      await new Promise(r => setTimeout(r, 60));
+      row.classList.add('visible');
+
+      const targetEl = document.getElementById(step.focusId);
+      robotArm.pointToElement(targetEl);
+
+      await new Promise(r => setTimeout(r, 2400));
+    }
+
+    isSolving = false;
+    document.getElementById('btnNew').disabled = false;
+  }
+
+  document.getElementById('btnStart').onclick = startAutoSolve;
+  document.getElementById('btnNew').onclick = loadNewProblem;
+
+  window.addEventListener('resize', () => {
+    const lastVisibleFocus = document.querySelector('.eq-row:last-child [id^="focus"]');
+    if (lastVisibleFocus) robotArm.pointToElement(lastVisibleFocus);
+  });
+
+  loadNewProblem();
+</script>
+</body>
+</html>
